@@ -91,6 +91,46 @@ Apply these to all eight, so the set reads as one thing.
   every shot below unless it says otherwise; Table flattens nested objects and the nesting is the
   point.
 
+### Finding the executions
+
+Fire times from `test/fires.log`, in UTC. n8n's *Started* is within a second of each.
+
+| Ticket | UTC | UTC+1 | Outcome |
+|---|---|---|---|
+| **009** | 12:58:57 | 13:58:57 | Waiting, then the scheduled poll finished it |
+| **010** | 13:01:26 | 14:01:26 | Exit, zero writes |
+| 005 | 13:01:46 | 14:01:46 | Manual |
+| 011 | 13:01:51 | 14:01:51 | Manual |
+| 008 | 13:01:56 | 14:01:56 | Failure, price |
+| 003 | 13:02:00 | 14:02:00 | Failure, price |
+| **004** | 13:02:05 | 14:02:05 | Failure, coverage |
+| 007 | 13:02:10 | 14:02:10 | Failure, data |
+| **001** | 13:02:15 | 14:02:15 | Success |
+| **002** | 13:02:20 | 14:02:20 | Success, iD loses |
+| **006** | 13:02:24 | 14:02:24 | Success, after the 500 |
+
+Bold are the six the shot list needs. n8n renders times in the browser's timezone, so print the same
+table in yours rather than guessing the offset:
+
+```bash
+node -e '
+const rows=require("fs").readFileSync("test/fires.log","utf8").trim().split("\n").map((l)=>({
+  id:(l.match(/"ticketId":"(TICKET-\d+)"/)||[])[1], t:new Date(l.slice(0,24))
+})).sort((a,b)=>a.t-b.t);
+for(const r of rows) console.log(r.id, r.t.toLocaleTimeString());
+'
+```
+
+If the clock still does not line up, use the order instead. It is fixed: 009 alone, a gap of about
+two and a half minutes, then ten more at roughly five-second intervals in exactly the sequence above.
+Counting up from the bottom of the block gets you there without trusting a timestamp.
+
+**Expect scheduled rows in between.** The Schedule trigger was on two minutes during Phase 4 and every
+poll saves an execution, including the ones that find nothing. Two consequences: bound the filter
+panel's *Execution start* to roughly 12:55 to 13:05 for shot 2, and find 009's scheduled execution by
+**run time** rather than by hunting. The empty polls stop at `Is Waiting?` in a second or two; the one
+that completed 009 carries on through the data fetch and four PATCHes and takes visibly longer.
+
 ### The set
 
 | # | Shot | The claim it carries |
@@ -302,13 +342,10 @@ If that execution has aged out, skip it rather than manufacturing an error on a 
 ## Packaging
 
 ```
-Saffron Lawson-Mills - Nous case study/
+Saffron - Nous case study/
   Nous_MSO_mobile_recommendation_v1.json     the n8n download
   case-study.pdf                             your 2-page doc
-  screenshots/
-    01-canvas-success-path.png
-    …
-    08-deals-retry-500.png
+  workflow-executions.pdf                    the eight screenshots, one per page
 ```
 
 Send the doc as PDF, not a Google Doc link: it is going to a recruiter's inbox and page count is part
@@ -322,10 +359,142 @@ doc's AI note that the probing catalogue and the rules table exist and that you 
 the onsite. That way they are a demonstration of method when you are in the room to walk through
 them, rather than unrequested reading now.
 
-**Whether to caption the screenshots.** Yes, but in the screenshots folder, not the doc: a
-`screenshots/README.md` or a single caption line in each file name's place. The doc is capped at two
-pages and captions would eat it. If you would rather keep the folder clean, put the eight captions
-in one short `screenshots/captions.md`.
+**Whether to caption the screenshots.** Yes, and in a separate PDF annex rather than in the doc. See
+below.
+
+## Formatting the screenshots
+
+The screenshots are their own deliverable, not part of the two-page doc. Eight of them would eat the
+whole page budget you need for Part A and Part B. Build them as a **separate PDF annex**, one file,
+eight pages.
+
+A folder of PNGs is worse than it looks: the ordering depends on how the reviewer's file manager
+sorts, and they have to open eight windows. One PDF opens once and scrolls.
+
+### Layout
+
+**Landscape A4, one shot per page.** The canvas is wide and the JSON panels are dense. Two per page
+drops the text below legibility, which defeats the point of showing JSON at all.
+
+Each page, top to bottom:
+
+1. **A bold one-line title**, the claim the shot carries. "TICKET-002: the iD bar, visible in the
+   ranking." Not "Screenshot 3".
+2. **The image**, as wide as the margins allow.
+3. **Two or three lines of caption** underneath, smaller.
+
+Number each page 1 to 8 to match the file names, because the doc points at them.
+
+A contents page is overkill for eight pages. If you want orientation, put a four-line preamble at the
+top of page 1: what the workflow is, that these are real executions from the evaluated set, and the
+date they ran.
+
+### Annotation
+
+Sparingly, and only where what matters is one value buried in a wall of JSON. That is two shots:
+
+- **Shot 3**: a box around `rankPence: 1250` and `rankPence: 1400`.
+- **Shot 8**, if the retry is visible: a box around the run selector.
+
+Everywhere else the node names and the canvas do the work. One accent colour, thin stroke, no drop
+shadows, no callout bubbles. An over-annotated deck reads as though the screenshots cannot speak for
+themselves.
+
+### Legibility
+
+The JSON is the evidence, so it has to survive. Before exporting, check one page at 100% on screen
+and, if you can, printed. If `rankPence` is not readable, the shot is not doing its job. Crop tighter
+rather than shrinking, and take a second shot instead of cramming two panels into one.
+
+### Build
+
+**Keynote, exported to PDF.** New document, choose a plain white theme, set the slide size to
+1920x1080 or A4 landscape under *Document → Slide Size*. One shot per slide. Title in the title box,
+image below, caption in a text box under it. For the two annotated shots use *Shape → Rectangle* with
+no fill and a 3pt stroke in one colour. Then *File → Export To → PDF*, image quality Best.
+
+Keep the deck file. If shot 8 has to be re-taken, you are swapping one image rather than rebuilding
+the layout.
+
+### How the doc uses it
+
+Reference shots by number in the two-page doc: "the iD penalty is a ranking key, not a discount
+(shot 3)". That buys the evidence without spending a line describing it.
+
+Hold this line: **the argument lives in the two pages, the evidence lives in the annex.** Captions
+describe what is on screen; they do not make the case. A caption that starts arguing belongs in
+Part A. The one exception is shot 5, where the reporting-enum gap is the pushback item and the
+screenshot is the clearest way to show it.
+
+## Formatting Part A and Part B
+
+Max two pages is the binding constraint, and the brief gives you seven things to cover in them. At
+11pt single-spaced with 2cm margins that is roughly 900 to 1100 words. Budget it before you write,
+because the two judgement calls are where the marks are and they are the easiest thing to get
+squeezed by a long preamble.
+
+**No preamble at all.** No restating the task, no "in this exercise I". The reviewer knows what they
+set. First heading, then straight into it.
+
+### Suggested split
+
+| | Section | Rough words | Form |
+|---|---|---|---|
+| **Page 1** | Two judgement calls | 130 each | Prose |
+| | What I would push back on, or the question | 90 | Prose |
+| | v2 after two weeks | 90 | Prose or three bullets |
+| | Three metrics and their triggers | 130 | **Table** |
+| **Page 2** | Three replies and their routing | 60 each | **Table** |
+| | How I would know the classifier was wrong | 130 | Prose |
+| | How I used AI | 60 | Prose |
+
+Two tables and the rest prose. The tables are doing real work: three metrics with a pause trigger
+each, and three replies with a route and a reason each, are both grids, and writing them as
+paragraphs costs you a third of a page for nothing. Everything else is judgement, and judgement reads
+better in sentences.
+
+### Headings
+
+Mirror the brief's own words so the reviewer can tick them off: `Part A: Reflection`, then
+`Two judgement calls`, `What I would push back on`, `v2`, `Metrics`. Then `Part B: Reply handling`.
+Use a colon rather than the brief's dash, per the writing conventions.
+
+Bold the lead phrase of each judgement call so the two are findable in a skim. That is the only
+formatting flourish worth having.
+
+### Where the raw material is
+
+`decisions.md` has every judgement call across four phases with the reasoning attached. The
+candidates worth considering for the two:
+
+- **The 009 finding.** Probing with throwaway ticket IDs protected the evaluated set and hid the one
+  retry-then-success scenario, because the mock keys it on the real ticket ID. The Waiting path was
+  built on the process doc's word rather than on the probe evidence, and it was right. A judgement
+  call with a visible payoff, and shot 6 is the evidence.
+- **Manual for an interrupted run**, rather than a silent exit or an automatic resume. The workflow
+  cannot tell whether the side effect went out, so it does not guess.
+- **Three WhatsApp templates by cause**, with the reporting enum left honest but imprecise. This one
+  doubles as the pushback item, so do not spend it twice.
+- **The hard data floor**, and the shadow note that turns it into something measurable rather than an
+  article of faith.
+
+For the pushback, `decisions.md` "Open questions for onsite" has seven, already written up. Number 1
+(no coverage-specific failure reason) is the strongest because it has a customer consequence and a
+screenshot. Number 6 (what re-raises a ticket after a Switch Failure) is the better *question*,
+because it is the thing that decides Part B reply 3, and using it ties the two halves of the doc
+together.
+
+For the metrics, two come free from the notes the workflow already writes: the share of failures
+carrying a data-floor shadow line, and the share of tickets that pass through Waiting and then
+succeed, which was 1 of 11 in the evaluated set. The third is yours.
+
+For Part B, the useful thing to notice is that the "no deal" message deliberately does not promise to
+check again, and it deliberately invites a reply. So reply 1 is traffic the message generates on
+purpose, and reply 3 lands on a question the workflow cannot answer because the upstream cadence is
+not ours. Say that, rather than inventing a policy.
+
+I have not drafted any of this and will not. Send me a draft and I will check it against the brief,
+the two-page limit and the writing conventions.
 
 ## Terminal reference
 
