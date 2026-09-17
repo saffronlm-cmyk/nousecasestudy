@@ -146,7 +146,7 @@ I write it. You can check it against the brief. Max two pages: Part A reflection
 | 2 Rules | Complete, 17 Sep 2026 | `rules.md`, `decisions.md` |
 | 3 Build | Complete, 17 Sep 2026 | `workflow/nous-mso-mobile-recommendation.json` (submission), `workflow/0N-*.json` sections, `workflow/build.mjs`, `workflow/code/`, `workflow/simulate.mjs`, `workflow/README.md` |
 | 4 Test | Complete, 17 Sep 2026 | `test/harness.mjs`, `test/results.md`, `test/results/`, `test/fires.log`. 11/11 pass. |
-| 5 Doc | Not started | |
+| 5 Doc | Not started. Submission packaging done. | `submission.md` (export steps, screenshot shot list, packaging), `tools/ticket-state.mjs`, `tools/fire.mjs` |
 
 Spent mock tickets: 020 (Phase 1 probing), 024, 016, 023, 014 (Phase 3 live tests, all in terminal stages). Sandbox 012, 013, 015, 017, 018, 019, 021, 022 usable. Evaluated 001 to 011 all run in Phase 4 and now in terminal stages; re-runs exit at I1b. Ask Nous for a reset before any further end-to-end run on them.
 
