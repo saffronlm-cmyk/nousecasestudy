@@ -1,0 +1,32 @@
+{
+  "at": "2026-09-17T09:57:11.674Z",
+  "request": {
+    "method": "PATCH",
+    "url": "https://nous-case-study-saffron.vercel.app/hubspot/tickets/TICKET-020",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "properties": {
+        "next_task_description": "probe: wrapped body"
+      }
+    }
+  },
+  "status": 200,
+  "durationMs": 622,
+  "body": {
+    "id": "TICKET-020",
+    "properties": {
+      "id": "TICKET-020",
+      "subject": "MOB | Jasper Hughes | Make recommendation | Mobile #1",
+      "hs_pipeline_id": "228462820",
+      "hs_pipeline_stage": "390658766",
+      "automation_status": null,
+      "next_task_description": "probe: wrapped body",
+      "email_switch_failure_reason": null,
+      "reporting_switch_failure_reason": null
+    }
+  }
+}

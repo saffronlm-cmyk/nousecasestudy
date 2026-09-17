@@ -1,0 +1,1880 @@
+{
+  "name": "Nous MSO mobile recommendation",
+  "nodes": [
+    {
+      "name": "Webhook: HubSpot ticket",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "2ff80e91-59b5-4770-ace4-3f0f74e6e247",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mso-mobile-recommendation",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "9fa54ad2-8b61-4af0-a5ad-d438ff0dfbdc",
+      "position": [
+        0,
+        340
+      ]
+    },
+    {
+      "name": "Normalise webhook input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Webhook path. Pull the four fields the run needs out of the webhook body. Nothing else from\n// the payload is trusted; the ticket is re-read from the API as the source of truth.\nconst b = $json.body || {};\nreturn { json: {\n  ticketId: b.ticketId ?? null,\n  householdId: b.householdId ?? null,\n  userId: b.userId ?? null,\n  testMode: b.testMode === true || b.testMode === 'true',\n  source: 'webhook',\n} };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "2a141d4b-3410-41c1-acae-e27f933ea45d",
+      "position": [
+        1040,
+        340
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Schedule: poll Waiting",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 60
+            }
+          ]
+        }
+      },
+      "id": "cb1c1451-94f6-4aff-a15b-6b7a19a1eb91",
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "List poll candidates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Schedule path, mock only. The mock has no \"search tickets by stage\" endpoint, so this node\n// emits one item per ticket ID to check. Production: replace this single node with a HubSpot\n// search on hs_pipeline_stage = Waiting. These three values are duplicated from Config because\n// this node runs before the paths converge; keep them in step.\nconst poll = {\n  baseUrl: 'https://nous-case-study-saffron.vercel.app',\n  waitingStageId: '5060559097',\n  ticketIds: ['TICKET-001', 'TICKET-002', 'TICKET-003', 'TICKET-004', 'TICKET-005', 'TICKET-006',\n    'TICKET-007', 'TICKET-008', 'TICKET-009', 'TICKET-010', 'TICKET-011'],\n};\nreturn poll.ticketIds.map((ticketId) => ({ json: { ticketId, poll } }));\n"
+      },
+      "id": "cc8331d0-db46-4496-acb2-b2b534b62ab3",
+      "position": [
+        260,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "GET ticket (poll)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.poll.baseUrl }}/hubspot/tickets/{{ $json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "91dccfbd-ee0b-4334-adc2-b0f2683dd5d8",
+      "position": [
+        520,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Is Waiting?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aa791e79-ff9b-4e40-a6dd-c5ae30cb0754",
+              "leftValue": "={{ $json.properties.hs_pipeline_stage }}",
+              "rightValue": "={{ $('List poll candidates').item.json.poll.waitingStageId }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "efa4fafe-f31c-43ce-a7bf-54384af587f9",
+      "position": [
+        780,
+        0
+      ]
+    },
+    {
+      "name": "Normalise polled ticket",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// A Waiting ticket found by the poll. Rebuild the run input from the properties the first pass\n// stored on the ticket, because the ticket itself carries no household or user ID. Missing\n// stored properties are caught by guard I0.\nconst p = $json.properties || {};\nreturn { json: {\n  ticketId: p.id || $json.id,\n  householdId: p.automation_household_id ?? null,\n  userId: p.automation_user_id ?? null,\n  testMode: p.automation_test_mode === true || p.automation_test_mode === 'true',\n  source: 'schedule',\n} };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "3366cb9b-2609-495e-aa3d-7276d28c378d",
+      "position": [
+        1040,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Config. Every threshold, ID and message the workflow uses lives here so ops can change\n// behaviour without touching logic. Mirrors the config block in rules.md.\n// Runs once per ticket, straight after the two trigger paths converge. Every later node reads\n// the run's input with $('Config').item.json.\nconst cfg = {\n  baseUrl: 'https://nous-case-study-saffron.vercel.app',\n\n  SAVING_FLOOR_PENCE: 300,          // £3.00. Compared in pence, never in floats.\n  ID_PENALTY_PENCE: 200,            // £2.00 added to iD Mobile for ranking only, never for the saving.\n  APPROVED_PROVIDER_IDS: [9, 13, 18], // Talkmobile, Giffgaff, iD Mobile\n  ID_MOBILE_PROVIDER_ID: 18,\n  COVERAGE_ACCEPTED: ['LIKELY'],    // allow-list; anything else is excluded\n  MAX_WAITING_ATTEMPTS: 3,          // third empty feed goes to Manual\n\n\n  PIPELINE_ID: '228462820',\n  stages: { open: '390658766', success: '446512118', failure: '409734350', manual: '440806104', waiting: '5060559097' },\n\n  // Group 1 is the customer segment (for the first name), group 2 is the service index.\n  SUBJECT_REGEX: '^MOB \\\\| (.+?) \\\\| Make recommendation \\\\| Mobile #(\\\\d+)',\n  NO_SERVICE_MARKER: '#No service found',\n  ATTEMPTS_PROPERTY: 'automation_attempts',\n  INTERRUPTED_STATUSES: ['recommendation_pending', 'recommendation_sent', 'message_pending', 'message_sent'],\n\n  EMAIL_REASONS: [\"Mob - can't beat deal\", 'Customer ineligible/can\\'t process switch', 'Customer unresponsive', 'Customer rejects switch', 'N/A'],\n  REPORTING_REASONS: ['INELIGIBLE_COULD_NOT_BEAT_CURRENT_DEAL', 'INELIGIBLE_IN_CONTRACT', 'MOB_MANAGEMENT_SWITCHED_OFF', 'UNABLE_REQUEST_OUT_OF_SERVICE_PARAMS', 'OTHER'],\n  FAILURE_REASONS: { email: \"Mob - can't beat deal\", reporting: 'INELIGIBLE_COULD_NOT_BEAT_CURRENT_DEAL' },\n\n  // WhatsApp bodies by failureCause. The greeting line is added by the evaluation node so the\n  // first-name fallback works. {monthlyData} is replaced with the service allowance.\n  WHATSAPP: {\n    price: [\n      \"We've just compared the SIM-only deals available at your address with what you're paying now.\",\n      \"Nothing out there would save you enough to make a switch worth your while, so we're leaving your mobile as it is.\",\n      \"If you'd like us to look again, or you've spotted a deal you'd like us to check, just reply here.\",\n    ].join('\\n'),\n    coverage: [\n      \"We've just looked at the SIM-only deals available at your address.\",\n      \"The deals we found aren't expected to have good coverage at your postcode, so we're not going to move you onto something that might not work where you live.\",\n      \"If you'd like us to look again, or you've spotted a deal you'd like us to check, just reply here.\",\n    ].join('\\n'),\n    data: [\n      \"We've just compared the SIM-only deals available at your address with your current plan.\",\n      \"Nothing we found gives you at least your current {monthlyData}GB for less, and we didn't want to save you money by cutting your data.\",\n      \"If you'd like us to look again, or you've spotted a deal you'd like us to check, just reply here.\",\n    ].join('\\n'),\n  },\n};\n\nreturn { json: { ...$json, cfg } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "fa535ffb-25e1-4d20-a416-52f9be21e06e",
+      "position": [
+        1300,
+        170
+      ]
+    },
+    {
+      "name": "GET ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.cfg.baseUrl }}/hubspot/tickets/{{ $json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "cf949476-bb9d-47b7-acc9-6b45e9a3e68d",
+      "position": [
+        1560,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Intake guards",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Guards I0 to I5 from rules.md, in order. Reads the ticket just fetched (the source of truth),\n// never the trigger payload. Emits decision.route: continue | manual | exit_slack | exit.\nconst ctx = $('Config').item.json;\nconst cfg = ctx.cfg;\nconst p = $json.properties || {};\nconst status = p.automation_status ?? null;\nconst stage = String(p.hs_pipeline_stage ?? '');\nconst subject = String(p.subject ?? '');\nconst st = cfg.stages;\n\nconst slack = (severity, title, message, shape) => ({ severity, title, message, context: { shape, stepFailed: 'Intake guards', ticketStage: stage } });\nconst manual = (shape, note, s = null) => ({ route: 'manual', shape, note: 'Routed to manual: ' + note, slack: s });\nconst exit = (shape, s = null) => ({ route: s ? 'exit_slack' : 'exit', shape, note: null, slack: s });\n\nlet decision;\nif (!ctx.householdId || !ctx.userId) {\n  decision = manual('I0', `${ctx.source} input is missing householdId or userId.`);\n} else if (cfg.INTERRUPTED_STATUSES.includes(status)) {\n  const what = status.startsWith('recommendation') ? 'recommendation' : 'message';\n  decision = manual('I1a', `interrupted run, last status ${status}. Check whether the ${what} went out before re-running.`,\n    slack('warning', 'Interrupted run', `${ctx.ticketId} found at ${status}. Routed to Manual.`, 'I1a'));\n} else if (status !== null && status !== 'waiting') {\n  const odd = status === 'completed' && stage === st.open;\n  decision = exit('I1b', odd ? slack('info', 'Completed marker on open stage', `${ctx.ticketId} has automation_status=completed but is still in the open stage. No action taken.`, 'I1b') : null);\n} else if (![st.open, st.waiting].includes(stage)) {\n  decision = exit('I2');\n} else if (String(p.hs_pipeline_id) !== cfg.PIPELINE_ID) {\n  decision = manual('I3', `unexpected pipeline ${p.hs_pipeline_id}.`);\n} else if (subject.includes(cfg.NO_SERVICE_MARKER)) {\n  decision = exit('I4');\n} else {\n  const m = new RegExp(cfg.SUBJECT_REGEX).exec(subject);\n  if (!m) {\n    decision = manual('I5', 'subject pattern not recognised, confirm ticket type.');\n  } else {\n    const firstName = (m[1].match(/[A-Za-z][A-Za-z'-]*/) || [null])[0];\n    const attempts = Number(p[cfg.ATTEMPTS_PROPERTY]) || 0;\n    return { json: { ...ctx, ticket: p, serviceIndex: Number(m[2]), firstName, attempts, decision: { route: 'continue', shape: null, note: null, slack: null } } };\n  }\n}\nreturn { json: { ...ctx, ticket: p, decision } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "a71ecde6-f367-4734-aa57-a990643a9d6f",
+      "position": [
+        1820,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Route intake",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "10d2a086-9767-472c-a163-af194ad24c39",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "continue",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "continue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2f27f314-6493-45fb-a8c1-6332286d87c9",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "manual",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "manual"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "29425b14-e8eb-4da0-a9ae-e21b5531a6ee",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "exit_slack",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "exit_slack"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "42746924-383f-428f-a989-6d1cf4cc1d48",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "exit",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "exit"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "id": "85e7ec95-22bd-4ba9-abcc-249eb2059a3e",
+      "position": [
+        2080,
+        170
+      ]
+    },
+    {
+      "name": "Slack: info (no action)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.cfg.baseUrl }}/slack/notify",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ticketId: $json.ticketId, householdId: $json.householdId, ...$json.decision.slack, testMode: $json.testMode }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "b020ba02-5d06-4458-a9b9-d78e7f61a1b4",
+      "position": [
+        2340,
+        510
+      ]
+    },
+    {
+      "name": "Exit: nothing to do",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "parameters": {},
+      "id": "8b74de58-55e6-4b9a-ac2a-c7b4fc2db738",
+      "position": [
+        2340,
+        680
+      ]
+    },
+    {
+      "name": "GET context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.cfg.baseUrl }}/context/{{ $json.householdId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "7926dff6-4bed-463b-adf0-6146dc5b5e7a",
+      "position": [
+        2340,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Pick service",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Guards D0 to D2. Verifies the household belongs to the user on the ticket input, then picks\n// mobileServices[N-1] and checks its data allowance is usable.\nconst ctx = $('Intake guards').item.json;\nconst cx = $json;\nconst services = Array.isArray(cx.mobileServices) ? cx.mobileServices : [];\nconst N = ctx.serviceIndex;\nconst manual = (shape, note) => ({ json: { ...ctx, context: { id: cx.id, userId: cx.userId, serviceCount: services.length }, decision: { route: 'manual', shape, note: 'Routed to manual: ' + note, slack: null } } });\n\nif (String(cx.userId) !== String(ctx.userId)) return manual('D0', `household ${ctx.householdId} belongs to ${cx.userId}, ticket input says ${ctx.userId}.`);\nif (!(N >= 1 && N <= services.length)) return manual('D1', `Mobile #${N} out of range, ${services.length} services found.`);\nconst service = services[N - 1];\nconst data = Number(service.monthlyData);\nif (service.monthlyData === null || service.monthlyData === undefined || !Number.isFinite(data)) return manual('D2', `monthlyData missing on ${service.id}.`);\n\nreturn { json: { ...ctx,\n  context: { id: cx.id, postcode: cx.postcode, userId: cx.userId, serviceCount: services.length },\n  service: { ...service, monthlyData: data },\n  decision: { route: 'continue', shape: null, note: null, slack: null } } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "cf4f0ca2-900f-4046-acb1-e4203fab2edb",
+      "position": [
+        2600,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Service ok?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "10d2a086-9767-472c-a163-af194ad24c39",
+              "leftValue": "={{ $json.decision.route }}",
+              "rightValue": "continue",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cb0672d6-9e0c-4e0f-ae3a-74d66d41c763",
+      "position": [
+        2860,
+        170
+      ]
+    },
+    {
+      "name": "GET current payment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.cfg.baseUrl }}/current-payment/{{ $json.service.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "6730b0cc-f63b-4246-a188-4d1580f2cb9e",
+      "position": [
+        3120,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Payment failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// D3. The current-payment call failed after retries (404 or persistent 5xx). Manual, no Slack.\nconst ctx = $('Pick service').item.json;\nconst err = $json.error || {};\nconst msg = err.message || err.description || JSON.stringify(err).slice(0, 200);\nreturn { json: { ...ctx, decision: { route: 'manual', shape: 'D3', note: `Routed to manual: payment endpoint failed for ${ctx.service.id} after retries: ${msg}`, slack: null } } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "1305a2b0-c6c0-4af5-a6d3-ac2b18e25155",
+      "position": [
+        3120,
+        510
+      ]
+    },
+    {
+      "name": "Check payment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Guards D4 and D5. A 200 with a null or zero amount is a data problem, not a price.\nconst ctx = $('Pick service').item.json;\nconst amt = $json.amountInGbpPounds;\nconst manual = (shape, note) => ({ json: { ...ctx, decision: { route: 'manual', shape, note: 'Routed to manual: ' + note, slack: null } } });\n\nif (amt === null || amt === undefined) return manual('D4', `payment null on ${ctx.service.id}.`);\nconst n = Number(amt);\nif (!Number.isFinite(n)) return manual('D4', `payment not numeric on ${ctx.service.id}: ${JSON.stringify(amt)}.`);\nif (n === 0) return manual('D5', `payment is £0 on ${ctx.service.id}, possible data error.`);\n\nreturn { json: { ...ctx, paymentGbp: n, paymentPence: Math.round(n * 100), decision: { route: 'continue', shape: null, note: null, slack: null } } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "8520b283-b088-4394-a13b-80d5689628b3",
+      "position": [
+        3380,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Payment ok?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "10d2a086-9767-472c-a163-af194ad24c39",
+              "leftValue": "={{ $json.decision.route }}",
+              "rightValue": "continue",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "38447c71-95ff-4cbc-a3fb-0d56a004b9fb",
+      "position": [
+        3640,
+        170
+      ]
+    },
+    {
+      "name": "GET deals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.cfg.baseUrl }}/deals/{{ $json.householdId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Ticket-Id",
+              "value": "={{ $json.ticketId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "0d83c817-8be9-4bcc-a280-7584c779844e",
+      "position": [
+        3900,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Deals fetch failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// GET /deals failed after retries. Treated as an empty feed so the Waiting logic applies.\nconst err = $json.error || {};\nreturn { json: { deals: [], fetchError: err.message || err.description || JSON.stringify(err).slice(0, 200) } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "f0ddfeba-34ad-4ed3-abb1-f23855a9d046",
+      "position": [
+        3900,
+        510
+      ]
+    },
+    {
+      "name": "Evaluate deals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Filter, rank, saving, failureCause, data-floor shadow and the decision note, exactly as in\n// rules.md. Also precomputes every body the outcome branches will send, so the HTTP nodes\n// downstream are plain and the execution trail shows what will be written before it is.\nconst ctx = $('Check payment').item.json;\nconst cfg = ctx.cfg;\nconst svc = ctx.service;\nconst feed = Array.isArray($json.deals) ? $json.deals : [];\nconst fetchError = $json.fetchError || null;\nconst pence = (x) => Math.round(Number(x) * 100);\nconst gbp = (p) => (p / 100).toFixed(2);\nconst isId = (d) => d.providerId === cfg.ID_MOBILE_PROVIDER_ID;\n\n// Filter in order, counting what each step removed.\nconst s0 = feed.filter((d) => d && Number.isInteger(d.providerId)\n  && Number.isFinite(Number(d.effective_line_rental)) && Number(d.effective_line_rental) > 0\n  && Number.isFinite(Number(d.monthlyData)) && typeof d.coverageAtHouseholdLocation === 'string');\nconst s1 = s0.filter((d) => cfg.APPROVED_PROVIDER_IDS.includes(d.providerId));\nconst s2 = s1.filter((d) => d.providerId !== svc.currentProviderId);\nconst s3 = s2.filter((d) => cfg.COVERAGE_ACCEPTED.includes(d.coverageAtHouseholdLocation));\nconst s4 = s3.filter((d) => Number(d.monthlyData) >= svc.monthlyData);\nconst removed = { malformed: feed.length - s0.length, nonApproved: s0.length - s1.length, currentProvider: s1.length - s2.length, coverage: s2.length - s3.length, data: s3.length - s4.length };\n\n// Rank: iD penalty on the sort key only, then data desc, then non-iD first, then deal id.\nconst rank = (arr) => arr\n  .map((d) => ({ stickeeDealId: d.stickeeDealId, providerId: d.providerId, providerName: d.providerName,\n    price: Number(d.effective_line_rental), monthlyData: Number(d.monthlyData), coverage: d.coverageAtHouseholdLocation,\n    rankPence: pence(d.effective_line_rental) + (isId(d) ? cfg.ID_PENALTY_PENCE : 0) }))\n  .sort((a, b) => a.rankPence - b.rankPence || b.monthlyData - a.monthlyData\n    || (isId(a) ? 1 : 0) - (isId(b) ? 1 : 0) || String(a.stickeeDealId).localeCompare(String(b.stickeeDealId)));\nconst pool = rank(s4);\nconst best = pool[0] || null;\nconst shadow = rank(s3)[0] || null;           // same ranking with the data floor skipped\nconst savingOf = (d) => ctx.paymentPence - pence(d.price);\n\nconst shadowNote = shadow && (!best || shadow.stickeeDealId !== best.stickeeDealId)\n  ? ` Ignoring data floor: ${shadow.providerName} ${shadow.monthlyData}GB £${shadow.price} would save £${gbp(savingOf(shadow))}.` : '';\nconst trail = `${feed.length} deals in feed, removed ${removed.malformed} malformed, ${removed.nonApproved} non-approved, ${removed.currentProvider} current provider, ${removed.coverage} coverage, ${removed.data} data.`;\nconst src = ` [${ctx.source}]`;\nconst slackCtx = (shape) => ({ shape, stepFailed: 'Evaluate deals', ticketStage: ctx.ticket.hs_pipeline_stage });\n\nlet decision;\nconst evaluation = { feedCount: feed.length, removed, poolCount: pool.length, pool: pool.slice(0, 5), best, shadow, fetchError, savingPence: null };\n\nif (feed.length === 0) {\n  const attempt = ctx.attempts + 1;\n  const why = fetchError ? ` Deals fetch failed: ${fetchError}.` : '';\n  if (attempt < cfg.MAX_WAITING_ATTEMPTS) {\n    decision = { route: 'waiting', shape: 'W1', cause: null, attempt, note: `Attempt ${attempt} of ${cfg.MAX_WAITING_ATTEMPTS}: no eligible deals in feed.${why}${src}`, slack: null };\n  } else {\n    decision = { route: 'manual', shape: 'W2', cause: null, attempt, note: `Routed to manual: no deals in feed after ${cfg.MAX_WAITING_ATTEMPTS} attempts.${why}${src}`,\n      slack: { severity: 'warning', title: 'Retry cap exhausted', message: `${ctx.ticketId}: empty deals feed on ${cfg.MAX_WAITING_ATTEMPTS} attempts. Routed to Manual.`, context: slackCtx('W2') } };\n  }\n} else if (s0.length === 0) {\n  decision = { route: 'manual', shape: 'F0', cause: null, note: `Routed to manual: ${feed.length} deals in feed, none parseable. Sample: ${JSON.stringify(feed[0]).slice(0, 300)}${src}`,\n    slack: { severity: 'warning', title: 'Deals feed unreadable', message: `${ctx.ticketId}: ${feed.length} deals in feed, none parseable.`, context: slackCtx('F0') } };\n} else if (!best) {\n  const cause = s2.length === 0 ? 'price' : s3.length === 0 ? 'coverage' : 'data';\n  decision = { route: 'failure', shape: 'F1', cause, note: `Best eligible: none (cause: ${cause}). ${trail}${shadowNote}${src}`, slack: null };\n} else {\n  const savingPence = savingOf(best);\n  evaluation.savingPence = savingPence;\n  const summary = `${best.providerName} ${best.monthlyData}GB £${best.price}`;\n  if (savingPence >= cfg.SAVING_FLOOR_PENCE) {\n    decision = { route: 'success', shape: 'S1', cause: null, note: `Recommending ${summary}/mo, saves £${gbp(savingPence)}/mo. stickeeDealId: ${best.stickeeDealId}. ${trail}${shadowNote}${src}`, slack: null };\n  } else {\n    decision = { route: 'failure', shape: 'F2', cause: 'price', note: `Best eligible: ${summary}, saves £${gbp(savingPence)}, below £${gbp(cfg.SAVING_FLOOR_PENCE)} floor. ${trail}${shadowNote}${src}`, slack: null };\n  }\n}\n\nconst out = { ...ctx, evaluation, decision };\nif (decision.route === 'waiting') {\n  out.waitingPatch = { next_task_description: decision.note, automation_status: 'waiting', [cfg.ATTEMPTS_PROPERTY]: decision.attempt,\n    automation_household_id: ctx.householdId, automation_user_id: ctx.userId, automation_test_mode: ctx.testMode, hs_pipeline_stage: cfg.stages.waiting };\n}\nif (decision.route === 'failure') {\n  const greeting = ctx.firstName ? `Hi ${ctx.firstName}, it's Nous.` : \"Hi, it's Nous.\";\n  out.whatsappMessage = greeting + '\\n' + cfg.WHATSAPP[decision.cause].replace('{monthlyData}', String(svc.monthlyData));\n  out.failurePatch = { next_task_description: decision.note, email_switch_failure_reason: cfg.FAILURE_REASONS.email, reporting_switch_failure_reason: cfg.FAILURE_REASONS.reporting };\n}\nif (decision.route === 'success') {\n  out.recommendationBody = { ticketId: ctx.ticketId, householdId: ctx.householdId, userId: ctx.userId, mobileServiceId: svc.id, stickeeDealId: best.stickeeDealId, testMode: ctx.testMode };\n}\nreturn { json: out };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "8a64b374-31be-41d8-ac0d-b49fb6dacc6d",
+      "position": [
+        4160,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Route outcome",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "30708734-9033-455a-ac76-aec3b41a4b81",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "success",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "success"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1b1603a7-4825-4638-af7b-aa7521cbcbb5",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "failure",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "failure"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b77bed0f-3689-499e-af47-12975d3eb3b4",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "waiting",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "waiting"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2f27f314-6493-45fb-a8c1-6332286d87c9",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "manual",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "manual"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "id": "acb20327-c69c-4be2-a8ab-5d246f9d5fa4",
+      "position": [
+        4420,
+        170
+      ]
+    },
+    {
+      "name": "PATCH: recommendation_pending",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $json.cfg.baseUrl }}/hubspot/tickets/{{ $json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { next_task_description: $json.decision.note, automation_status: \"recommendation_pending\" } }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "478dd4b1-8bd4-444c-a2dd-7855aa04a45f",
+      "position": [
+        4680,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "POST recommendation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Evaluate deals').item.json.cfg.baseUrl }}/recommendation",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Evaluate deals').item.json.recommendationBody) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "id": "172f2fa6-b33e-4923-a1bb-73916c640606",
+      "position": [
+        4940,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "PATCH: recommendation_sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Evaluate deals').item.json.cfg.baseUrl }}/hubspot/tickets/{{ $('Evaluate deals').item.json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { automation_status: \"recommendation_sent\" } }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "3bcf7dd5-ea96-4267-ad92-45851e3f1825",
+      "position": [
+        5200,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "PATCH: Success stage + completed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Evaluate deals').item.json.cfg.baseUrl }}/hubspot/tickets/{{ $('Evaluate deals').item.json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { automation_status: \"completed\", hs_pipeline_stage: $('Evaluate deals').item.json.cfg.stages.success } }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "696bdb8b-5c2a-4432-a80d-1aa9a1aa88ba",
+      "position": [
+        5460,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "PATCH: failure reasons + note",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $json.cfg.baseUrl }}/hubspot/tickets/{{ $json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: $json.failurePatch }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "bca08b4c-69f1-41a3-ad20-e709acbc818e",
+      "position": [
+        4680,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "GET ticket: read back reasons",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Evaluate deals').item.json.cfg.baseUrl }}/hubspot/tickets/{{ $('Evaluate deals').item.json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "6325eb38-48f7-451a-ae70-78e2474d8e04",
+      "position": [
+        4940,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Verify reasons",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Read-back check after writing both failure reasons. Both must be present and in the allowed\n// lists before the stage moves. This is the guard the process doc's post-mortem asks for.\nconst ctx = $('Evaluate deals').item.json;\nconst cfg = ctx.cfg;\nconst p = $json.properties || {};\nconst email = p.email_switch_failure_reason;\nconst reporting = p.reporting_switch_failure_reason;\nconst ok = cfg.EMAIL_REASONS.includes(email) && cfg.REPORTING_REASONS.includes(reporting);\n\nif (ok) return { json: { ...ctx, verified: { email, reporting }, decision: { ...ctx.decision, route: 'failure_verified' } } };\nreturn { json: { ...ctx, decision: { route: 'manual', shape: 'FV',\n  note: `Routed to manual: failure reason validation failed. Read back email=${JSON.stringify(email)} reporting=${JSON.stringify(reporting)}. Stage not moved.`,\n  slack: { severity: 'error', title: 'Failure reason validation failed', message: `${ctx.ticketId}: reasons did not read back as written. Stage not moved, routed to Manual.`, context: { shape: ctx.decision.shape, stepFailed: 'Verify reasons', ticketStage: ctx.ticket.hs_pipeline_stage } } } } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "3c864bb4-364b-49f4-a6fb-d3583b8a9d5e",
+      "position": [
+        5200,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Reasons verified?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "40daffe0-b2e8-4eab-a2fa-0b22eff4d640",
+              "leftValue": "={{ $json.decision.route }}",
+              "rightValue": "failure_verified",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c16445e0-00a8-4670-aef6-2c0359a43552",
+      "position": [
+        5460,
+        170
+      ]
+    },
+    {
+      "name": "PATCH: message_pending",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Evaluate deals').item.json.cfg.baseUrl }}/hubspot/tickets/{{ $('Evaluate deals').item.json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { automation_status: \"message_pending\" } }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "48253812-cdad-4147-abfd-1280adac8911",
+      "position": [
+        5720,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "POST WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Evaluate deals').item.json.cfg.baseUrl }}/comms/whatsapp",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ticketId: $('Evaluate deals').item.json.ticketId, userId: $('Evaluate deals').item.json.userId, message: $('Evaluate deals').item.json.whatsappMessage, testMode: $('Evaluate deals').item.json.testMode }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "id": "afc927d4-b06c-4b52-ae77-f5be2786cff2",
+      "position": [
+        5980,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "PATCH: message_sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Evaluate deals').item.json.cfg.baseUrl }}/hubspot/tickets/{{ $('Evaluate deals').item.json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { automation_status: \"message_sent\" } }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "17e77bc2-3895-46b5-a783-9eb4d2342865",
+      "position": [
+        6240,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "PATCH: Failure stage + completed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Evaluate deals').item.json.cfg.baseUrl }}/hubspot/tickets/{{ $('Evaluate deals').item.json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { automation_status: \"completed\", hs_pipeline_stage: $('Evaluate deals').item.json.cfg.stages.failure } }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "5b0c6be4-59ff-4ce5-a9a7-9e033b1b2ef2",
+      "position": [
+        6500,
+        170
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "PATCH: Waiting stage + stored input",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $json.cfg.baseUrl }}/hubspot/tickets/{{ $json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: $json.waitingPatch }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "6f8acedd-b1ce-4007-a7e2-0b8481e6afe2",
+      "position": [
+        4680,
+        340
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Build manual",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Every Manual route lands here with a decision already attached. Builds the single PATCH that\n// writes the note, sets automation_status=manual and moves the stage. The IF that follows fires\n// Slack first when the decision carries one, so the alert goes out even if the PATCH then fails.\nconst j = $json;\nreturn { json: { ...j, manualPatch: {\n  next_task_description: (j.decision && j.decision.note) || 'Routed to manual: no note recorded.',\n  automation_status: 'manual',\n  hs_pipeline_stage: j.cfg.stages.manual,\n  // W2 arrives with the attempt that hit the cap; record it so the property matches the note.\n  ...(j.decision && j.decision.attempt ? { [j.cfg.ATTEMPTS_PROPERTY]: j.decision.attempt } : {}),\n} } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "de195eac-d892-423c-a9df-cca0b5148921",
+      "position": [
+        4680,
+        850
+      ]
+    },
+    {
+      "name": "Slack needed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5f175299-cbbe-47c3-a3a5-2fb02907d72a",
+              "leftValue": "={{ $json.decision && $json.decision.slack ? 'yes' : 'no' }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e22b079f-28e5-43be-a515-85cbb6ee6a22",
+      "position": [
+        4940,
+        850
+      ]
+    },
+    {
+      "name": "Slack: alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.cfg.baseUrl }}/slack/notify",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ticketId: $('Build manual').item.json.ticketId, householdId: $('Build manual').item.json.householdId, ...$('Build manual').item.json.decision.slack, testMode: $('Build manual').item.json.testMode }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "ecbcf074-6096-4d09-a2e2-0d6b67adcde5",
+      "position": [
+        5200,
+        850
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "PATCH: Manual stage + note",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Build manual').item.json.cfg.baseUrl }}/hubspot/tickets/{{ $('Build manual').item.json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: $('Build manual').item.json.manualPatch }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "dae97cd2-faa6-4938-a5e8-877be65b0fe6",
+      "position": [
+        5460,
+        850
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Unhandled error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Any node's error output lands here. Turns it into a Manual decision with a Slack error so\n// nothing fails silently. $prevNode names the node that failed.\nlet ctx;\ntry { ctx = $('Config').item.json; } catch (e) { ctx = $json; }\nlet failedNode = 'unknown';\ntry { failedNode = $prevNode.name; } catch (e) {}\nconst err = $json.error || {};\nconst msg = err.message || err.description || JSON.stringify(err).slice(0, 300);\nreturn { json: { ...ctx, decision: { route: 'manual', shape: 'ERR',\n  note: `Routed to manual: unhandled error at \"${failedNode}\": ${msg}`,\n  slack: { severity: 'error', title: 'Unhandled error', message: `${ctx.ticketId || 'unknown ticket'}: \"${failedNode}\" failed: ${msg}`, context: { shape: 'ERR', stepFailed: failedNode, ticketStage: ctx.ticket ? ctx.ticket.hs_pipeline_stage : null } } } } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "025f9fad-217f-4038-a225-571cd9da1df9",
+      "position": [
+        3380,
+        1190
+      ]
+    },
+    {
+      "name": "Slack: manual PATCH failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.cfg.baseUrl }}/slack/notify",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ticketId: $('Config').item.json.ticketId, householdId: $('Config').item.json.householdId, severity: 'error', title: 'Manual PATCH failed', message: $('Config').item.json.ticketId + ': could not move ticket to Manual: ' + (($json.error || {}).message || JSON.stringify($json.error || {})), context: { shape: 'ERR', stepFailed: 'PATCH: Manual stage + note', ticketStage: null }, testMode: $('Config').item.json.testMode }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "9be96474-21b4-4be3-ab54-4f4df19939b7",
+      "position": [
+        5720,
+        1020
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: HubSpot ticket": {
+      "main": [
+        [
+          {
+            "node": "Normalise webhook input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise webhook input": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: poll Waiting": {
+      "main": [
+        [
+          {
+            "node": "List poll candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List poll candidates": {
+      "main": [
+        [
+          {
+            "node": "GET ticket (poll)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET ticket (poll)": {
+      "main": [
+        [
+          {
+            "node": "Is Waiting?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Waiting?": {
+      "main": [
+        [
+          {
+            "node": "Normalise polled ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise polled ticket": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "GET ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET ticket": {
+      "main": [
+        [
+          {
+            "node": "Intake guards",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intake guards": {
+      "main": [
+        [
+          {
+            "node": "Route intake",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route intake": {
+      "main": [
+        [
+          {
+            "node": "GET context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build manual",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack: info (no action)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Exit: nothing to do",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET context": {
+      "main": [
+        [
+          {
+            "node": "Pick service",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick service": {
+      "main": [
+        [
+          {
+            "node": "Service ok?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Service ok?": {
+      "main": [
+        [
+          {
+            "node": "GET current payment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build manual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET current payment": {
+      "main": [
+        [
+          {
+            "node": "Check payment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Payment failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payment failed": {
+      "main": [
+        [
+          {
+            "node": "Build manual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check payment": {
+      "main": [
+        [
+          {
+            "node": "Payment ok?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payment ok?": {
+      "main": [
+        [
+          {
+            "node": "GET deals",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build manual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET deals": {
+      "main": [
+        [
+          {
+            "node": "Evaluate deals",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Deals fetch failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deals fetch failed": {
+      "main": [
+        [
+          {
+            "node": "Evaluate deals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate deals": {
+      "main": [
+        [
+          {
+            "node": "Route outcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route outcome": {
+      "main": [
+        [
+          {
+            "node": "PATCH: recommendation_pending",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PATCH: failure reasons + note",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PATCH: Waiting stage + stored input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build manual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH: recommendation_pending": {
+      "main": [
+        [
+          {
+            "node": "POST recommendation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST recommendation": {
+      "main": [
+        [
+          {
+            "node": "PATCH: recommendation_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH: recommendation_sent": {
+      "main": [
+        [
+          {
+            "node": "PATCH: Success stage + completed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH: failure reasons + note": {
+      "main": [
+        [
+          {
+            "node": "GET ticket: read back reasons",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET ticket: read back reasons": {
+      "main": [
+        [
+          {
+            "node": "Verify reasons",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify reasons": {
+      "main": [
+        [
+          {
+            "node": "Reasons verified?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reasons verified?": {
+      "main": [
+        [
+          {
+            "node": "PATCH: message_pending",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build manual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH: message_pending": {
+      "main": [
+        [
+          {
+            "node": "POST WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "PATCH: message_sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH: message_sent": {
+      "main": [
+        [
+          {
+            "node": "PATCH: Failure stage + completed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build manual": {
+      "main": [
+        [
+          {
+            "node": "Slack needed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack needed?": {
+      "main": [
+        [
+          {
+            "node": "Slack: alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PATCH: Manual stage + note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: alert": {
+      "main": [
+        [
+          {
+            "node": "PATCH: Manual stage + note",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PATCH: Manual stage + note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH: Success stage + completed": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH: Failure stage + completed": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH: Waiting stage + stored input": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Unhandled error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unhandled error": {
+      "main": [
+        [
+          {
+            "node": "Build manual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH: Manual stage + note": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Slack: manual PATCH failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

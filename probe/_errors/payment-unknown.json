@@ -1,0 +1,31 @@
+{
+  "at": "2026-09-17T09:49:45.828Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/current-payment/NOPE-999",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 404,
+  "durationMs": 212,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "45",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:49:45 GMT",
+    "etag": "W/\"2d-tUxiJn5BhE8+7gIGv1aWNUVzQWE\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "132",
+    "x-ratelimit-reset": "1789638600000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::n42zx-1789638585490-b7895a98c334"
+  },
+  "body": {
+    "error": "Unknown mobileServiceId: NOPE-999"
+  }
+}

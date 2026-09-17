@@ -1,0 +1,48 @@
+{
+  "ticketId": "TICKET-009",
+  "firedAt": "2026-09-17T12:58:57.364Z",
+  "webhookAck": "{\"message\":\"Workflow was started\"}",
+  "before": {
+    "id": "TICKET-009",
+    "subject": "MOB | Charlie Nguyen | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "390658766",
+    "automation_status": null,
+    "next_task_description": null,
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null
+  },
+  "interim": {
+    "id": "TICKET-009",
+    "subject": "MOB | Charlie Nguyen | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "5060559097",
+    "automation_status": "waiting",
+    "next_task_description": "Attempt 1 of 3: no eligible deals in feed. [webhook]",
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null,
+    "automation_attempts": 1,
+    "automation_household_id": "HH-009",
+    "automation_user_id": "USR-009",
+    "automation_test_mode": true
+  },
+  "interimProblems": [],
+  "after": {
+    "id": "TICKET-009",
+    "subject": "MOB | Charlie Nguyen | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "446512118",
+    "automation_status": "completed",
+    "next_task_description": "Recommending Giffgaff 30GB £15/mo, saves £10.00/mo. stickeeDealId: SDL-GIFF-001. 4 deals in feed, removed 0 malformed, 1 non-approved, 0 current provider, 0 coverage, 0 data. [schedule]",
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null,
+    "automation_attempts": 1,
+    "automation_household_id": "HH-009",
+    "automation_user_id": "USR-009",
+    "automation_test_mode": true
+  },
+  "problems": [],
+  "ok": true,
+  "secondsToSettle": 91,
+  "recheckedAt": "2026-09-17T13:01:12.979Z"
+}

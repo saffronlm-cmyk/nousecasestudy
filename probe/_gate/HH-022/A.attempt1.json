@@ -1,0 +1,65 @@
+{
+  "at": "2026-09-17T09:51:14.010Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/deals/HH-022",
+    "headers": {
+      "Accept": "application/json",
+      "X-Ticket-Id": "PROBE-GATE-HH-022-A",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 453,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "638",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:51:13 GMT",
+    "etag": "W/\"27e-jOm3ek2Nyzf5yIf0y13SOQ9PepI\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "155",
+    "x-ratelimit-reset": "1789638720000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::5lw5g-1789638673430-3a2d339a1d39"
+  },
+  "body": {
+    "deals": [
+      {
+        "stickeeDealId": "SDL-GIFF-022",
+        "providerName": "Giffgaff",
+        "providerId": 13,
+        "monthlyData": 10,
+        "effective_line_rental": 18,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-TALK-022",
+        "providerName": "Talkmobile",
+        "providerId": 9,
+        "monthlyData": 12,
+        "effective_line_rental": 17,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-ID-022",
+        "providerName": "iD Mobile",
+        "providerId": 18,
+        "monthlyData": 20,
+        "effective_line_rental": 15,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-VOXI-022",
+        "providerName": "VOXI",
+        "providerId": 7,
+        "monthlyData": 25,
+        "effective_line_rental": 12,
+        "coverageAtHouseholdLocation": "LIKELY"
+      }
+    ]
+  }
+}

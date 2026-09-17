@@ -1,0 +1,41 @@
+{
+  "at": "2026-09-17T09:48:09.597Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/hubspot/tickets/TICKET-004",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 522,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "306",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:48:09 GMT",
+    "etag": "W/\"132-EMZVDN9sWYki8T1DL40tOo/x2Xc\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "193",
+    "x-ratelimit-reset": "1789638540000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::wbfh2-1789638488948-cd0cdb160787"
+  },
+  "body": {
+    "id": "TICKET-004",
+    "properties": {
+      "id": "TICKET-004",
+      "subject": "MOB | Casey Wright | Make recommendation | Mobile #1",
+      "hs_pipeline_id": "228462820",
+      "hs_pipeline_stage": "390658766",
+      "automation_status": null,
+      "next_task_description": null,
+      "email_switch_failure_reason": null,
+      "reporting_switch_failure_reason": null
+    }
+  }
+}

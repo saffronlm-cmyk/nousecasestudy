@@ -1,0 +1,41 @@
+{
+  "at": "2026-09-17T09:54:31.510Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/deals/HH-024",
+    "headers": {
+      "Accept": "application/json",
+      "X-Ticket-Id": "PROBE-HH-024-202609170953",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 426,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "169",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:54:31 GMT",
+    "etag": "W/\"a9-jy+9MbZeR458LAxISS6geJP7rko\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "129",
+    "x-ratelimit-reset": "1789638900000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::tbtlt-1789638870961-215a5dd7b2e1"
+  },
+  "body": {
+    "deals": [
+      {
+        "stickeeDealId": "SDL-GIFF-024",
+        "providerName": "Giffgaff",
+        "providerId": 13,
+        "monthlyData": 20,
+        "effective_line_rental": 15,
+        "coverageAtHouseholdLocation": "LIKELY"
+      }
+    ]
+  }
+}

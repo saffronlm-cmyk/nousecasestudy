@@ -1,0 +1,19 @@
+{
+  "at": "2026-09-17T09:56:54.491Z",
+  "request": {
+    "method": "POST",
+    "url": "https://nous-case-study-saffron.vercel.app/comms/whatsapp",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>",
+      "Content-Type": "application/json"
+    },
+    "body": {}
+  },
+  "status": 200,
+  "durationMs": 900,
+  "body": {
+    "messageId": "MSG-1789639014242-lazjik",
+    "status": "sent"
+  }
+}

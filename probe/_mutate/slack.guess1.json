@@ -1,0 +1,24 @@
+{
+  "at": "2026-09-17T09:57:36.825Z",
+  "request": {
+    "method": "POST",
+    "url": "https://nous-case-study-saffron.vercel.app/slack/notify",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "ticketId": "TICKET-024",
+      "severity": "info",
+      "title": "Probe",
+      "message": "Sandbox probe from mutate.mjs",
+      "testMode": true
+    }
+  },
+  "status": 200,
+  "durationMs": 402,
+  "body": {
+    "ok": true
+  }
+}

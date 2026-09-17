@@ -1,0 +1,32 @@
+{
+  "at": "2026-09-17T09:54:57.959Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/deals/HH-005",
+    "headers": {
+      "Accept": "application/json",
+      "X-Ticket-Id": "PROBE-HH-005-202609170954",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 572,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "12",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:54:57 GMT",
+    "etag": "W/\"c-rB0E+tfo1BERmF97oSEr9L4gTSM\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "144",
+    "x-ratelimit-reset": "1789638900000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::c6vcv-1789638897265-2e2d75eb9caa"
+  },
+  "body": {
+    "deals": []
+  }
+}

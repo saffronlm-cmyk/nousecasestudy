@@ -1,0 +1,51 @@
+{
+  "at": "2026-09-17T09:48:07.927Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/context/HH-002",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 203,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "373",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:48:07 GMT",
+    "etag": "W/\"175-jrdW3GPOky47e8NB6npDUW4LOmw\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "196",
+    "x-ratelimit-reset": "1789638540000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::h2kff-1789638487599-49cd7f7f286c"
+  },
+  "body": {
+    "id": "HH-002",
+    "postcode": "M1 4WP",
+    "userId": "USR-002",
+    "mobileServices": [
+      {
+        "id": "MOB-002A",
+        "createdAt": "2023-06-10T12:00:00Z",
+        "monthlyData": 25,
+        "currentProviderId": 2,
+        "currentProviderName": "EE",
+        "currentPaymentRef": "PAY-002A"
+      },
+      {
+        "id": "MOB-002B",
+        "createdAt": "2024-03-20T12:00:00Z",
+        "monthlyData": 10,
+        "currentProviderId": 3,
+        "currentProviderName": "O2",
+        "currentPaymentRef": "PAY-002B"
+      }
+    ]
+  }
+}

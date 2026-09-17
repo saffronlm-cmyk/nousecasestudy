@@ -1,0 +1,31 @@
+{
+  "ticketId": "TICKET-007",
+  "firedAt": "2026-09-17T13:02:10.462Z",
+  "webhookAck": "{\"message\":\"Workflow was started\"}",
+  "before": {
+    "id": "TICKET-007",
+    "subject": "MOB | Morgan Taylor | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "390658766",
+    "automation_status": null,
+    "next_task_description": null,
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null
+  },
+  "interim": null,
+  "interimProblems": null,
+  "after": {
+    "id": "TICKET-007",
+    "subject": "MOB | Morgan Taylor | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "409734350",
+    "automation_status": "completed",
+    "next_task_description": "Best eligible: none (cause: data). 3 deals in feed, removed 0 malformed, 0 non-approved, 0 current provider, 0 coverage, 3 data. Ignoring data floor: Giffgaff 10GB £10 would save £20.00. [webhook]",
+    "email_switch_failure_reason": "Mob - can't beat deal",
+    "reporting_switch_failure_reason": "INELIGIBLE_COULD_NOT_BEAT_CURRENT_DEAL"
+  },
+  "problems": [],
+  "ok": true,
+  "secondsToSettle": 4,
+  "recheckedAt": "2026-09-17T13:02:48.634Z"
+}

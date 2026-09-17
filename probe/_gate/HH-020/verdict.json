@@ -1,0 +1,40 @@
+{
+  "household": "HH-020",
+  "a": [
+    {
+      "status": 200,
+      "dealCount": 0,
+      "envelopeKeys": [],
+      "extras": {}
+    },
+    {
+      "status": 200,
+      "dealCount": 0,
+      "envelopeKeys": [],
+      "extras": {}
+    },
+    {
+      "status": 200,
+      "dealCount": 0,
+      "envelopeKeys": [],
+      "extras": {}
+    }
+  ],
+  "b": {
+    "status": 200,
+    "dealCount": 0,
+    "envelopeKeys": [],
+    "extras": {}
+  },
+  "noHeader": {
+    "status": 400,
+    "dealCount": null,
+    "envelopeKeys": [
+      "error"
+    ],
+    "extras": {
+      "error": "Missing X-Ticket-Id header"
+    }
+  },
+  "verdict": "INCONCLUSIVE: probe ids accepted but nothing changed across 3 calls on HH-001. Cannot tell what the counter is keyed on from this household alone. Report before proceeding."
+}

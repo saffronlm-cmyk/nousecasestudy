@@ -1,0 +1,31 @@
+{
+  "at": "2026-09-17T09:49:30.856Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/current-payment/MOB-015",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 187,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "24",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:49:30 GMT",
+    "etag": "W/\"18-q21lwBbrVIZlgI53NYGJqia7IQ4\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "142",
+    "x-ratelimit-reset": "1789638600000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::mgwzp-1789638570541-574ac3890abf"
+  },
+  "body": {
+    "amountInGbpPounds": 22
+  }
+}

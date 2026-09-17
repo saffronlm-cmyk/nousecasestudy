@@ -1,0 +1,43 @@
+{
+  "at": "2026-09-17T09:48:29.668Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/context/HH-023",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 377,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "222",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:48:29 GMT",
+    "etag": "W/\"de-XOxKT1Zv0MZBmzxkwe+P7EY9zNU\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "154",
+    "x-ratelimit-reset": "1789638540000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::dxngd-1789638509225-5bf18e9811ed"
+  },
+  "body": {
+    "id": "HH-023",
+    "postcode": "DH1 1AA",
+    "userId": "USR-023",
+    "mobileServices": [
+      {
+        "id": "MOB-023",
+        "createdAt": "2024-04-18T10:00:00Z",
+        "monthlyData": 10,
+        "currentProviderId": 2,
+        "currentProviderName": "EE",
+        "currentPaymentRef": "PAY-023"
+      }
+    ]
+  }
+}

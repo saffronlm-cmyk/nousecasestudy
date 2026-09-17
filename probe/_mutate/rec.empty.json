@@ -1,0 +1,19 @@
+{
+  "at": "2026-09-17T09:56:53.027Z",
+  "request": {
+    "method": "POST",
+    "url": "https://nous-case-study-saffron.vercel.app/recommendation",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>",
+      "Content-Type": "application/json"
+    },
+    "body": {}
+  },
+  "status": 200,
+  "durationMs": 1291,
+  "body": {
+    "recommendationId": "REC-1789639012825-2u51tq",
+    "success": true
+  }
+}

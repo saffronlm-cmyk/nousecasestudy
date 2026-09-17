@@ -1,0 +1,41 @@
+{
+  "at": "2026-09-17T09:48:08.569Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/hubspot/tickets/TICKET-003",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 491,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "303",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:48:08 GMT",
+    "etag": "W/\"12f-+zv/Nqd3Islhxrfs1YxomI9Mu0I\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "195",
+    "x-ratelimit-reset": "1789638540000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::h2kff-1789638487947-4248333b701a"
+  },
+  "body": {
+    "id": "TICKET-003",
+    "properties": {
+      "id": "TICKET-003",
+      "subject": "MOB | Sam Brown | Make recommendation | Mobile #1",
+      "hs_pipeline_id": "228462820",
+      "hs_pipeline_stage": "390658766",
+      "automation_status": null,
+      "next_task_description": null,
+      "email_switch_failure_reason": null,
+      "reporting_switch_failure_reason": null
+    }
+  }
+}

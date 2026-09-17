@@ -1,0 +1,18 @@
+{
+  "at": "2026-09-17T09:56:55.446Z",
+  "request": {
+    "method": "POST",
+    "url": "https://nous-case-study-saffron.vercel.app/slack/notify",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>",
+      "Content-Type": "application/json"
+    },
+    "body": {}
+  },
+  "status": 200,
+  "durationMs": 802,
+  "body": {
+    "ok": true
+  }
+}

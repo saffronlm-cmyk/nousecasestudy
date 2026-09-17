@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-17T09:57:37.334Z",
+  "request": {
+    "method": "POST",
+    "url": "https://nous-case-study-saffron.vercel.app/recommendation",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "ticketId": "TICKET-024",
+      "householdId": "HH-024",
+      "mobileServiceId": "MOB-024",
+      "stickeeDealId": "SDL-GIFF-024",
+      "testMode": true
+    }
+  },
+  "status": 200,
+  "durationMs": 355,
+  "body": {
+    "recommendationId": "REC-1789639057163-729vr2",
+    "success": true
+  }
+}

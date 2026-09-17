@@ -1,0 +1,31 @@
+{
+  "ticketId": "TICKET-004",
+  "firedAt": "2026-09-17T13:02:05.840Z",
+  "webhookAck": "{\"message\":\"Workflow was started\"}",
+  "before": {
+    "id": "TICKET-004",
+    "subject": "MOB | Casey Wright | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "390658766",
+    "automation_status": null,
+    "next_task_description": null,
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null
+  },
+  "interim": null,
+  "interimProblems": null,
+  "after": {
+    "id": "TICKET-004",
+    "subject": "MOB | Casey Wright | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "409734350",
+    "automation_status": "completed",
+    "next_task_description": "Best eligible: none (cause: coverage). 3 deals in feed, removed 0 malformed, 0 non-approved, 0 current provider, 3 coverage, 0 data. [webhook]",
+    "email_switch_failure_reason": "Mob - can't beat deal",
+    "reporting_switch_failure_reason": "INELIGIBLE_COULD_NOT_BEAT_CURRENT_DEAL"
+  },
+  "problems": [],
+  "ok": true,
+  "secondsToSettle": 4,
+  "recheckedAt": "2026-09-17T13:02:48.193Z"
+}

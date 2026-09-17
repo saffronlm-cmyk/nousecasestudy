@@ -1,0 +1,43 @@
+{
+  "at": "2026-09-17T09:48:26.460Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/context/HH-020",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 326,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "228",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:48:26 GMT",
+    "etag": "W/\"e4-jJNqntOR8gkmX56DrsavFc3GBq0\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "160",
+    "x-ratelimit-reset": "1789638540000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::5crsd-1789638506053-e43ca7d3e7d8"
+  },
+  "body": {
+    "id": "HH-020",
+    "postcode": "TS1 1AA",
+    "userId": "USR-020",
+    "mobileServices": [
+      {
+        "id": "MOB-020",
+        "createdAt": "2024-04-10T10:00:00Z",
+        "monthlyData": 20,
+        "currentProviderId": 1,
+        "currentProviderName": "Vodafone",
+        "currentPaymentRef": "PAY-020"
+      }
+    ]
+  }
+}

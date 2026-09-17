@@ -1,0 +1,30 @@
+{
+  "ticketId": "TICKET-002",
+  "firedAt": "2026-09-17T13:02:20.140Z",
+  "webhookAck": "{\"message\":\"Workflow was started\"}",
+  "before": {
+    "id": "TICKET-002",
+    "subject": "MOB | Alex Patel | Make recommendation | Mobile #2",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "390658766",
+    "automation_status": null,
+    "next_task_description": null,
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null
+  },
+  "interim": null,
+  "interimProblems": null,
+  "after": {
+    "id": "TICKET-002",
+    "subject": "MOB | Alex Patel | Make recommendation | Mobile #2",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "446512118",
+    "automation_status": "completed",
+    "next_task_description": "Recommending Talkmobile 15GB £12.5/mo, saves £7.50/mo. stickeeDealId: SDL-TALK-002. 3 deals in feed, removed 0 malformed, 0 non-approved, 0 current provider, 0 coverage, 0 data. [webhook]",
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null
+  },
+  "problems": [],
+  "ok": true,
+  "secondsToSettle": 4
+}

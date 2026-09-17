@@ -1,0 +1,523 @@
+{
+  "name": "Nous MSO mobile recommendation (01-intake-and-guards)",
+  "nodes": [
+    {
+      "name": "Webhook: HubSpot ticket",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "2ff80e91-59b5-4770-ace4-3f0f74e6e247",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mso-mobile-recommendation",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "9fa54ad2-8b61-4af0-a5ad-d438ff0dfbdc",
+      "position": [
+        0,
+        340
+      ]
+    },
+    {
+      "name": "Normalise webhook input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Webhook path. Pull the four fields the run needs out of the webhook body. Nothing else from\n// the payload is trusted; the ticket is re-read from the API as the source of truth.\nconst b = $json.body || {};\nreturn { json: {\n  ticketId: b.ticketId ?? null,\n  householdId: b.householdId ?? null,\n  userId: b.userId ?? null,\n  testMode: b.testMode === true || b.testMode === 'true',\n  source: 'webhook',\n} };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "2a141d4b-3410-41c1-acae-e27f933ea45d",
+      "position": [
+        1040,
+        340
+      ]
+    },
+    {
+      "name": "Schedule: poll Waiting",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 60
+            }
+          ]
+        }
+      },
+      "id": "cb1c1451-94f6-4aff-a15b-6b7a19a1eb91",
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "List poll candidates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Schedule path, mock only. The mock has no \"search tickets by stage\" endpoint, so this node\n// emits one item per ticket ID to check. Production: replace this single node with a HubSpot\n// search on hs_pipeline_stage = Waiting. These three values are duplicated from Config because\n// this node runs before the paths converge; keep them in step.\nconst poll = {\n  baseUrl: 'https://nous-case-study-saffron.vercel.app',\n  waitingStageId: '5060559097',\n  ticketIds: ['TICKET-001', 'TICKET-002', 'TICKET-003', 'TICKET-004', 'TICKET-005', 'TICKET-006',\n    'TICKET-007', 'TICKET-008', 'TICKET-009', 'TICKET-010', 'TICKET-011'],\n};\nreturn poll.ticketIds.map((ticketId) => ({ json: { ticketId, poll } }));\n"
+      },
+      "id": "cc8331d0-db46-4496-acb2-b2b534b62ab3",
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "name": "GET ticket (poll)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.poll.baseUrl }}/hubspot/tickets/{{ $json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "91dccfbd-ee0b-4334-adc2-b0f2683dd5d8",
+      "position": [
+        520,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "name": "Is Waiting?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aa791e79-ff9b-4e40-a6dd-c5ae30cb0754",
+              "leftValue": "={{ $json.properties.hs_pipeline_stage }}",
+              "rightValue": "={{ $('List poll candidates').item.json.poll.waitingStageId }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "efa4fafe-f31c-43ce-a7bf-54384af587f9",
+      "position": [
+        780,
+        0
+      ]
+    },
+    {
+      "name": "Normalise polled ticket",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// A Waiting ticket found by the poll. Rebuild the run input from the properties the first pass\n// stored on the ticket, because the ticket itself carries no household or user ID. Missing\n// stored properties are caught by guard I0.\nconst p = $json.properties || {};\nreturn { json: {\n  ticketId: p.id || $json.id,\n  householdId: p.automation_household_id ?? null,\n  userId: p.automation_user_id ?? null,\n  testMode: p.automation_test_mode === true || p.automation_test_mode === 'true',\n  source: 'schedule',\n} };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "3366cb9b-2609-495e-aa3d-7276d28c378d",
+      "position": [
+        1040,
+        0
+      ]
+    },
+    {
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Config. Every threshold, ID and message the workflow uses lives here so ops can change\n// behaviour without touching logic. Mirrors the config block in rules.md.\n// Runs once per ticket, straight after the two trigger paths converge. Every later node reads\n// the run's input with $('Config').item.json.\nconst cfg = {\n  baseUrl: 'https://nous-case-study-saffron.vercel.app',\n\n  SAVING_FLOOR_PENCE: 300,          // £3.00. Compared in pence, never in floats.\n  ID_PENALTY_PENCE: 200,            // £2.00 added to iD Mobile for ranking only, never for the saving.\n  APPROVED_PROVIDER_IDS: [9, 13, 18], // Talkmobile, Giffgaff, iD Mobile\n  ID_MOBILE_PROVIDER_ID: 18,\n  COVERAGE_ACCEPTED: ['LIKELY'],    // allow-list; anything else is excluded\n  MAX_WAITING_ATTEMPTS: 3,          // third empty feed goes to Manual\n\n\n  PIPELINE_ID: '228462820',\n  stages: { open: '390658766', success: '446512118', failure: '409734350', manual: '440806104', waiting: '5060559097' },\n\n  // Group 1 is the customer segment (for the first name), group 2 is the service index.\n  SUBJECT_REGEX: '^MOB \\\\| (.+?) \\\\| Make recommendation \\\\| Mobile #(\\\\d+)',\n  NO_SERVICE_MARKER: '#No service found',\n  ATTEMPTS_PROPERTY: 'automation_attempts',\n  INTERRUPTED_STATUSES: ['recommendation_pending', 'recommendation_sent', 'message_pending', 'message_sent'],\n\n  EMAIL_REASONS: [\"Mob - can't beat deal\", 'Customer ineligible/can\\'t process switch', 'Customer unresponsive', 'Customer rejects switch', 'N/A'],\n  REPORTING_REASONS: ['INELIGIBLE_COULD_NOT_BEAT_CURRENT_DEAL', 'INELIGIBLE_IN_CONTRACT', 'MOB_MANAGEMENT_SWITCHED_OFF', 'UNABLE_REQUEST_OUT_OF_SERVICE_PARAMS', 'OTHER'],\n  FAILURE_REASONS: { email: \"Mob - can't beat deal\", reporting: 'INELIGIBLE_COULD_NOT_BEAT_CURRENT_DEAL' },\n\n  // WhatsApp bodies by failureCause. The greeting line is added by the evaluation node so the\n  // first-name fallback works. {monthlyData} is replaced with the service allowance.\n  WHATSAPP: {\n    price: [\n      \"We've just compared the SIM-only deals available at your address with what you're paying now.\",\n      \"Nothing out there would save you enough to make a switch worth your while, so we're leaving your mobile as it is.\",\n      \"If you'd like us to look again, or you've spotted a deal you'd like us to check, just reply here.\",\n    ].join('\\n'),\n    coverage: [\n      \"We've just looked at the SIM-only deals available at your address.\",\n      \"The deals we found aren't expected to have good coverage at your postcode, so we're not going to move you onto something that might not work where you live.\",\n      \"If you'd like us to look again, or you've spotted a deal you'd like us to check, just reply here.\",\n    ].join('\\n'),\n    data: [\n      \"We've just compared the SIM-only deals available at your address with your current plan.\",\n      \"Nothing we found gives you at least your current {monthlyData}GB for less, and we didn't want to save you money by cutting your data.\",\n      \"If you'd like us to look again, or you've spotted a deal you'd like us to check, just reply here.\",\n    ].join('\\n'),\n  },\n};\n\nreturn { json: { ...$json, cfg } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "fa535ffb-25e1-4d20-a416-52f9be21e06e",
+      "position": [
+        1300,
+        170
+      ]
+    },
+    {
+      "name": "GET ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.cfg.baseUrl }}/hubspot/tickets/{{ $json.ticketId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "cf949476-bb9d-47b7-acc9-6b45e9a3e68d",
+      "position": [
+        1560,
+        170
+      ]
+    },
+    {
+      "name": "Intake guards",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "// Guards I0 to I5 from rules.md, in order. Reads the ticket just fetched (the source of truth),\n// never the trigger payload. Emits decision.route: continue | manual | exit_slack | exit.\nconst ctx = $('Config').item.json;\nconst cfg = ctx.cfg;\nconst p = $json.properties || {};\nconst status = p.automation_status ?? null;\nconst stage = String(p.hs_pipeline_stage ?? '');\nconst subject = String(p.subject ?? '');\nconst st = cfg.stages;\n\nconst slack = (severity, title, message, shape) => ({ severity, title, message, context: { shape, stepFailed: 'Intake guards', ticketStage: stage } });\nconst manual = (shape, note, s = null) => ({ route: 'manual', shape, note: 'Routed to manual: ' + note, slack: s });\nconst exit = (shape, s = null) => ({ route: s ? 'exit_slack' : 'exit', shape, note: null, slack: s });\n\nlet decision;\nif (!ctx.householdId || !ctx.userId) {\n  decision = manual('I0', `${ctx.source} input is missing householdId or userId.`);\n} else if (cfg.INTERRUPTED_STATUSES.includes(status)) {\n  const what = status.startsWith('recommendation') ? 'recommendation' : 'message';\n  decision = manual('I1a', `interrupted run, last status ${status}. Check whether the ${what} went out before re-running.`,\n    slack('warning', 'Interrupted run', `${ctx.ticketId} found at ${status}. Routed to Manual.`, 'I1a'));\n} else if (status !== null && status !== 'waiting') {\n  const odd = status === 'completed' && stage === st.open;\n  decision = exit('I1b', odd ? slack('info', 'Completed marker on open stage', `${ctx.ticketId} has automation_status=completed but is still in the open stage. No action taken.`, 'I1b') : null);\n} else if (![st.open, st.waiting].includes(stage)) {\n  decision = exit('I2');\n} else if (String(p.hs_pipeline_id) !== cfg.PIPELINE_ID) {\n  decision = manual('I3', `unexpected pipeline ${p.hs_pipeline_id}.`);\n} else if (subject.includes(cfg.NO_SERVICE_MARKER)) {\n  decision = exit('I4');\n} else {\n  const m = new RegExp(cfg.SUBJECT_REGEX).exec(subject);\n  if (!m) {\n    decision = manual('I5', 'subject pattern not recognised, confirm ticket type.');\n  } else {\n    const firstName = (m[1].match(/[A-Za-z][A-Za-z'-]*/) || [null])[0];\n    const attempts = Number(p[cfg.ATTEMPTS_PROPERTY]) || 0;\n    return { json: { ...ctx, ticket: p, serviceIndex: Number(m[2]), firstName, attempts, decision: { route: 'continue', shape: null, note: null, slack: null } } };\n  }\n}\nreturn { json: { ...ctx, ticket: p, decision } };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "a71ecde6-f367-4734-aa57-a990643a9d6f",
+      "position": [
+        1820,
+        170
+      ]
+    },
+    {
+      "name": "Route intake",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "10d2a086-9767-472c-a163-af194ad24c39",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "continue",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "continue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2f27f314-6493-45fb-a8c1-6332286d87c9",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "manual",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "manual"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "29425b14-e8eb-4da0-a9ae-e21b5531a6ee",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "exit_slack",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "exit_slack"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "42746924-383f-428f-a989-6d1cf4cc1d48",
+                    "leftValue": "={{ $json.decision.route }}",
+                    "rightValue": "exit",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "exit"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "id": "85e7ec95-22bd-4ba9-abcc-249eb2059a3e",
+      "position": [
+        2080,
+        170
+      ]
+    },
+    {
+      "name": "Slack: info (no action)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.cfg.baseUrl }}/slack/notify",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ticketId: $json.ticketId, householdId: $json.householdId, ...$json.decision.slack, testMode: $json.testMode }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "e7ef653a-3a8b-46ee-aa1d-a5e0ec2b69a3",
+          "name": "Nous mock API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 2000,
+      "id": "b020ba02-5d06-4458-a9b9-d78e7f61a1b4",
+      "position": [
+        2340,
+        510
+      ]
+    },
+    {
+      "name": "Exit: nothing to do",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "parameters": {},
+      "id": "8b74de58-55e6-4b9a-ac2a-c7b4fc2db738",
+      "position": [
+        2340,
+        680
+      ]
+    },
+    {
+      "id": "5a6bef16-b19d-4817-ab52-c2a23b5baba1",
+      "name": "Next section: GET context",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2600,
+        170
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "324049ca-369e-4a37-a782-5615a2e43666",
+      "name": "Next section: Build manual",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2600,
+        340
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Webhook: HubSpot ticket": {
+      "main": [
+        [
+          {
+            "node": "Normalise webhook input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise webhook input": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: poll Waiting": {
+      "main": [
+        [
+          {
+            "node": "List poll candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List poll candidates": {
+      "main": [
+        [
+          {
+            "node": "GET ticket (poll)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET ticket (poll)": {
+      "main": [
+        [
+          {
+            "node": "Is Waiting?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Waiting?": {
+      "main": [
+        [
+          {
+            "node": "Normalise polled ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise polled ticket": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "GET ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET ticket": {
+      "main": [
+        [
+          {
+            "node": "Intake guards",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intake guards": {
+      "main": [
+        [
+          {
+            "node": "Route intake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route intake": {
+      "main": [
+        [
+          {
+            "node": "Next section: GET context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Next section: Build manual",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack: info (no action)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Exit: nothing to do",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

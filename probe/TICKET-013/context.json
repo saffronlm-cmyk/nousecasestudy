@@ -1,0 +1,59 @@
+{
+  "at": "2026-09-17T09:48:19.289Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/context/HH-013",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 243,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "530",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:48:19 GMT",
+    "etag": "W/\"212-xn55cqzPhhvOrqjaYWay94SOv0g\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "174",
+    "x-ratelimit-reset": "1789638540000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::7l6ng-1789638498918-fc0c8b98c47d"
+  },
+  "body": {
+    "id": "HH-013",
+    "postcode": "EH1 1AA",
+    "userId": "USR-013",
+    "mobileServices": [
+      {
+        "id": "MOB-013A",
+        "createdAt": "2023-04-10T09:00:00Z",
+        "monthlyData": 30,
+        "currentProviderId": 1,
+        "currentProviderName": "Vodafone",
+        "currentPaymentRef": "PAY-013A"
+      },
+      {
+        "id": "MOB-013B",
+        "createdAt": "2024-01-15T09:00:00Z",
+        "monthlyData": 10,
+        "currentProviderId": 2,
+        "currentProviderName": "EE",
+        "currentPaymentRef": "PAY-013B"
+      },
+      {
+        "id": "MOB-013C",
+        "createdAt": "2024-06-01T09:00:00Z",
+        "monthlyData": 50,
+        "currentProviderId": 3,
+        "currentProviderName": "O2",
+        "currentPaymentRef": "PAY-013C"
+      }
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "at": "2026-09-17T09:49:47.677Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/hubspot/tickets/TICKET-012",
+    "headers": {
+      "Accept": "application/json"
+    }
+  },
+  "status": 401,
+  "durationMs": 191,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "32",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:49:47 GMT",
+    "etag": "W/\"20-UIuM3vidUIiqA5pzEX4VZfS7ML0\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "130",
+    "x-ratelimit-reset": "1789638600000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::4bqhn-1789638587358-f5160b7b8642"
+  },
+  "body": {
+    "error": "Invalid bearer token"
+  }
+}

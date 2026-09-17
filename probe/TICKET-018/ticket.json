@@ -1,0 +1,41 @@
+{
+  "at": "2026-09-17T09:48:23.944Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/hubspot/tickets/TICKET-018",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 431,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "305",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:48:23 GMT",
+    "etag": "W/\"131-4APXIfymYK4agwE9VS0REFEyl9A\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "165",
+    "x-ratelimit-reset": "1789638540000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::h2kff-1789638503383-e9577c1f4cf0"
+  },
+  "body": {
+    "id": "TICKET-018",
+    "properties": {
+      "id": "TICKET-018",
+      "subject": "MOB | Leo Edwards | Make recommendation | Mobile #1",
+      "hs_pipeline_id": "228462820",
+      "hs_pipeline_stage": "390658766",
+      "automation_status": null,
+      "next_task_description": null,
+      "email_switch_failure_reason": null,
+      "reporting_switch_failure_reason": null
+    }
+  }
+}

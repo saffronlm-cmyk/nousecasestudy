@@ -1,0 +1,24 @@
+{
+  "at": "2026-09-17T09:57:36.269Z",
+  "request": {
+    "method": "POST",
+    "url": "https://nous-case-study-saffron.vercel.app/comms/whatsapp",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "ticketId": "TICKET-024",
+      "userId": "USR-024",
+      "message": "Probe message, sandbox only.",
+      "testMode": true
+    }
+  },
+  "status": 200,
+  "durationMs": 424,
+  "body": {
+    "messageId": "MSG-1789639056096-wb8sre",
+    "status": "sent"
+  }
+}

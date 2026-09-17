@@ -1,0 +1,31 @@
+{
+  "at": "2026-09-17T09:49:44.370Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/hubspot/tickets/TICKET-999",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 404,
+  "durationMs": 2889,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "40",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:49:44 GMT",
+    "etag": "W/\"28-FzhYK/kjQg/YqRZD6ZZz3TteQYs\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "133",
+    "x-ratelimit-reset": "1789638600000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::prbd4-1789638583483-b2c4810b40f0"
+  },
+  "body": {
+    "error": "Unknown ticketId: TICKET-999"
+  }
+}

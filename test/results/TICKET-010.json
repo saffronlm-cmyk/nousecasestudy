@@ -1,0 +1,30 @@
+{
+  "ticketId": "TICKET-010",
+  "firedAt": "2026-09-17T13:01:26.040Z",
+  "webhookAck": "{\"message\":\"Workflow was started\"}",
+  "before": {
+    "id": "TICKET-010",
+    "subject": "MOB | Quinn Murphy | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "390658766",
+    "automation_status": "completed",
+    "next_task_description": null,
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null
+  },
+  "interim": null,
+  "interimProblems": null,
+  "after": {
+    "id": "TICKET-010",
+    "subject": "MOB | Quinn Murphy | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "390658766",
+    "automation_status": "completed",
+    "next_task_description": null,
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null
+  },
+  "problems": [],
+  "ok": true,
+  "secondsToSettle": 9
+}

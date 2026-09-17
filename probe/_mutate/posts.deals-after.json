@@ -1,0 +1,26 @@
+{
+  "at": "2026-09-17T09:57:38.750Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/deals/HH-024",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>",
+      "X-Ticket-Id": "TICKET-024"
+    }
+  },
+  "status": 200,
+  "durationMs": 610,
+  "body": {
+    "deals": [
+      {
+        "stickeeDealId": "SDL-GIFF-024",
+        "providerName": "Giffgaff",
+        "providerId": 13,
+        "monthlyData": 20,
+        "effective_line_rental": 15,
+        "coverageAtHouseholdLocation": "LIKELY"
+      }
+    ]
+  }
+}

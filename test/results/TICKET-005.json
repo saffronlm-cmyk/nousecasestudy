@@ -1,0 +1,30 @@
+{
+  "ticketId": "TICKET-005",
+  "firedAt": "2026-09-17T13:01:46.549Z",
+  "webhookAck": "{\"message\":\"Workflow was started\"}",
+  "before": {
+    "id": "TICKET-005",
+    "subject": "MOB | Jordan Lee | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "390658766",
+    "automation_status": null,
+    "next_task_description": null,
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null
+  },
+  "interim": null,
+  "interimProblems": null,
+  "after": {
+    "id": "TICKET-005",
+    "subject": "MOB | Jordan Lee | Make recommendation | Mobile #1",
+    "hs_pipeline_id": "228462820",
+    "hs_pipeline_stage": "440806104",
+    "automation_status": "manual",
+    "next_task_description": "Routed to manual: monthlyData missing on MOB-005.",
+    "email_switch_failure_reason": null,
+    "reporting_switch_failure_reason": null
+  },
+  "problems": [],
+  "ok": true,
+  "secondsToSettle": 4
+}

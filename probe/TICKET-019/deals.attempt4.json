@@ -1,0 +1,178 @@
+{
+  "at": "2026-09-17T09:54:19.089Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/deals/HH-019",
+    "headers": {
+      "Accept": "application/json",
+      "X-Ticket-Id": "PROBE-HH-019-202609170953",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 439,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-encoding": "br",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:54:18 GMT",
+    "etag": "W/\"b1d-8R8lvXIwZG15ffCDOd8TV0OCnVU\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "transfer-encoding": "chunked",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "139",
+    "x-ratelimit-reset": "1789638900000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::8cpmv-1789638858528-54d6c38de99d"
+  },
+  "body": {
+    "deals": [
+      {
+        "stickeeDealId": "SDL-VOXI-019",
+        "providerName": "VOXI",
+        "providerId": 7,
+        "monthlyData": 30,
+        "effective_line_rental": 15,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-SMARTY-019",
+        "providerName": "SMARTY",
+        "providerId": 20,
+        "monthlyData": 25,
+        "effective_line_rental": 17,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-LEBARA-019",
+        "providerName": "Lebara",
+        "providerId": 21,
+        "monthlyData": 30,
+        "effective_line_rental": 19,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-THREE-019",
+        "providerName": "Three",
+        "providerId": 5,
+        "monthlyData": 40,
+        "effective_line_rental": 18,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-BT-019",
+        "providerName": "BT Mobile",
+        "providerId": 6,
+        "monthlyData": 30,
+        "effective_line_rental": 22,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-VOD-019",
+        "providerName": "Vodafone",
+        "providerId": 1,
+        "monthlyData": 25,
+        "effective_line_rental": 25,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-EE-019",
+        "providerName": "EE",
+        "providerId": 2,
+        "monthlyData": 30,
+        "effective_line_rental": 28,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-SKY-019",
+        "providerName": "Sky Mobile",
+        "providerId": 22,
+        "monthlyData": 25,
+        "effective_line_rental": 20,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-O2-019",
+        "providerName": "O2",
+        "providerId": 3,
+        "monthlyData": 20,
+        "effective_line_rental": 24,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-TESCO-019",
+        "providerName": "Tesco Mobile",
+        "providerId": 4,
+        "monthlyData": 25,
+        "effective_line_rental": 23,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-PLUS-019",
+        "providerName": "Plusnet Mobile",
+        "providerId": 23,
+        "monthlyData": 25,
+        "effective_line_rental": 21,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-ASDA-019",
+        "providerName": "Asda Mobile",
+        "providerId": 24,
+        "monthlyData": 20,
+        "effective_line_rental": 19,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-TALK-019A",
+        "providerName": "Talkmobile",
+        "providerId": 9,
+        "monthlyData": 25,
+        "effective_line_rental": 18,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-TALK-019B",
+        "providerName": "Talkmobile",
+        "providerId": 9,
+        "monthlyData": 30,
+        "effective_line_rental": 20,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-GIFF-019A",
+        "providerName": "Giffgaff",
+        "providerId": 13,
+        "monthlyData": 25,
+        "effective_line_rental": 14,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-GIFF-019B",
+        "providerName": "Giffgaff",
+        "providerId": 13,
+        "monthlyData": 40,
+        "effective_line_rental": 17,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-ID-019A",
+        "providerName": "iD Mobile",
+        "providerId": 18,
+        "monthlyData": 25,
+        "effective_line_rental": 12,
+        "coverageAtHouseholdLocation": "LIKELY"
+      },
+      {
+        "stickeeDealId": "SDL-ID-019B",
+        "providerName": "iD Mobile",
+        "providerId": 18,
+        "monthlyData": 30,
+        "effective_line_rental": 19,
+        "coverageAtHouseholdLocation": "LIKELY"
+      }
+    ]
+  }
+}

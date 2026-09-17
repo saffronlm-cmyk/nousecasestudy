@@ -1,0 +1,41 @@
+{
+  "at": "2026-09-17T09:48:06.031Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/hubspot/tickets/TICKET-001",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 1624,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "304",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:48:05 GMT",
+    "etag": "W/\"130-fEoiZF2EShwx9Zi3vZ8et3FOBR4\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "199",
+    "x-ratelimit-reset": "1789638540000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::5crsd-1789638484833-0d395df2fd09"
+  },
+  "body": {
+    "id": "TICKET-001",
+    "properties": {
+      "id": "TICKET-001",
+      "subject": "MOB | Jane Smith | Make recommendation | Mobile #1",
+      "hs_pipeline_id": "228462820",
+      "hs_pipeline_stage": "390658766",
+      "automation_status": null,
+      "next_task_description": null,
+      "email_switch_failure_reason": null,
+      "reporting_switch_failure_reason": null
+    }
+  }
+}

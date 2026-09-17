@@ -1,0 +1,43 @@
+{
+  "at": "2026-09-17T09:48:13.739Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/context/HH-008",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 200,
+  "durationMs": 190,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "231",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:48:13 GMT",
+    "etag": "W/\"e7-w2aPamrKq6KXDwCYb8CILp3rcHA\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "184",
+    "x-ratelimit-reset": "1789638540000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::bk247-1789638493420-a3eac5654cb9"
+  },
+  "body": {
+    "id": "HH-008",
+    "postcode": "NE1 1AA",
+    "userId": "USR-008",
+    "mobileServices": [
+      {
+        "id": "MOB-008",
+        "createdAt": "2024-03-05T13:00:00Z",
+        "monthlyData": 5,
+        "currentProviderId": 4,
+        "currentProviderName": "Tesco Mobile",
+        "currentPaymentRef": "PAY-008"
+      }
+    ]
+  }
+}

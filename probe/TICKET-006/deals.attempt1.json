@@ -1,0 +1,32 @@
+{
+  "at": "2026-09-17T09:54:59.803Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/deals/HH-006",
+    "headers": {
+      "Accept": "application/json",
+      "X-Ticket-Id": "PROBE-HH-006-202609170954",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 500,
+  "durationMs": 463,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "38",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:54:59 GMT",
+    "etag": "W/\"26-Nen9VWHcc6Gt2aE5lvPlab0MJlE\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "143",
+    "x-ratelimit-reset": "1789638900000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::t6gh9-1789638899218-ec85e5addbb0"
+  },
+  "body": {
+    "error": "Simulated upstream failure"
+  }
+}

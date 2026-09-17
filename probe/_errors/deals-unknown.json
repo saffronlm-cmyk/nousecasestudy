@@ -1,0 +1,32 @@
+{
+  "at": "2026-09-17T09:49:46.918Z",
+  "request": {
+    "method": "GET",
+    "url": "https://nous-case-study-saffron.vercel.app/deals/HH-999",
+    "headers": {
+      "Accept": "application/json",
+      "X-Ticket-Id": "PROBE-ERR",
+      "Authorization": "Bearer <redacted>"
+    }
+  },
+  "status": 404,
+  "durationMs": 937,
+  "error": null,
+  "responseHeaders": {
+    "cache-control": "public, max-age=0, must-revalidate",
+    "content-length": "39",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Thu, 17 Sep 2026 09:49:46 GMT",
+    "etag": "W/\"27-2+X6RTY8+zm+kJ2iZ7S0GzEvfvQ\"",
+    "server": "Vercel",
+    "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+    "x-ratelimit-limit": "200",
+    "x-ratelimit-remaining": "132",
+    "x-ratelimit-reset": "1789638600000",
+    "x-vercel-cache": "BYPASS",
+    "x-vercel-id": "lhr1::iad1::wnfts-1789638585854-d05d06698a69"
+  },
+  "body": {
+    "error": "Unknown householdId: HH-999"
+  }
+}
