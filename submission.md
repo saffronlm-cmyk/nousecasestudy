@@ -62,7 +62,9 @@ console.log("poll interval:", JSON.stringify(s.parameters.rule.interval));
 ```
 
 Adjust the path to wherever Chrome put it. You want 43 nodes both sides, no differences, and
-`{"field":"hours","hoursInterval":1}`. If nodes differ, the live workflow drifted from the repo and
+`{"field":"hours"}`. n8n doesn't serialise `hoursInterval` when it's left at the default of 1, so its
+absence here is correct, not a sign the field was never set; check the number on screen (*Hours
+Between Triggers*) if in doubt rather than trusting the JSON alone. If nodes differ, the live workflow drifted from the repo and
 the export wins: copy it over `workflow/nous-mso-mobile-recommendation.json` and note what changed.
 
 ## Deliverable 2: the screenshots
