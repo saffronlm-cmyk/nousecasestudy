@@ -211,26 +211,49 @@ panel. Two shots is acceptable here if one cannot hold both `pool` and `decision
 
 **4. `04-failure-reasons-verified.png`** — the post-mortem the process doc mentions.
 
-TICKET-004's execution (13:02:05) → on the canvas, zoom into the failure branch so these six nodes are
-in frame in order: `PATCH: failure reasons + note` → `GET ticket: read back reasons` →
+TICKET-004's execution (13:02:05), in the **Logs** view rather than on the canvas. Select
+`POST WhatsApp` in the left rail and leave the **INPUT** panel open.
+
+The claim here is about order, and the Logs rail shows order with every node name legible, which a
+zoomed canvas does not: `PATCH: failure reasons + note` → `GET ticket: read back reasons` →
 `Verify reasons` → `Reasons verified?` → `PATCH: message_pending` → `POST WhatsApp` →
 `PATCH: message_sent` → `PATCH: Failure stage + completed`.
 
-The node names alone carry the argument, which is why this is a canvas shot rather than a panel shot.
-If you want one panel open, open `Verify reasons` → **OUTPUT** → **JSON** and show `verified` populated
-with both values and `decision.route: failure_verified`.
+The INPUT panel then does the rest of the work for free. It shows the ticket at the moment the message
+is about to go out, and three things in it are the whole argument:
+
+- both failure reasons already written and valid
+- `automation_status: message_pending`, the marker bracketing the send
+- `hs_pipeline_stage: 390658766`, **still the open stage**
+
+Both reasons on the ticket, stage not yet moved. That is the post-mortem guard visible as data rather
+than asserted in a caption.
 
 Caption: *The brief's post-mortem was a ticket moved with only one reason set. Here both are written
-in one PATCH, read back from the API, checked against the allowed lists, and only then does the stage
-move, last. A read-back that disagrees routes to Manual instead.*
+in one PATCH, read back from the API and checked against the allowed lists before anything else
+happens. The stage is still 390658766 at this point; it moves last, after the message is confirmed
+sent. A read-back that disagrees routes to Manual instead.*
 
 ---
 
 **5. `05-whatsapp-coverage.png`** — the customer-facing judgement.
 
-Same TICKET-004 execution → double-click `POST WhatsApp` → **INPUT** → **JSON**.
+Same TICKET-004 execution → `Evaluate deals` → **OUTPUT** → **JSON** → scroll to `whatsappMessage`.
 
-In frame: the request body, with `message` reading the coverage template:
+**Not `POST WhatsApp`'s INPUT panel.** A node's INPUT is what the *upstream* node emitted, and
+`POST WhatsApp` sits downstream of `PATCH: message_pending`, so its input is the PATCH response: the
+whole ticket, no message in it. The body is built by an expression that reaches back past it:
+
+```
+{{ JSON.stringify({ ticketId: …, userId: …, message: $('Evaluate deals').item.json.whatsappMessage, testMode: … }) }}
+```
+
+So `Evaluate deals` is where the literal text lives. Also worth checking the **Parameters** tab on
+`POST WhatsApp`: n8n usually renders a resolved preview under an expression field when there is
+execution data, which would show the exact JSON that went over the wire. If it renders, prefer it.
+Verify before relying on it.
+
+In frame: `whatsappMessage`, reading the coverage template:
 
 > Hi Casey, it's Nous.
 > We've just looked at the SIM-only deals available at your address.
@@ -238,8 +261,8 @@ In frame: the request body, with `message` reading the coverage template:
 > move you onto something that might not work where you live.
 > If you'd like us to look again, or you've spotted a deal you'd like us to check, just reply here.
 
-Use INPUT rather than OUTPUT. The output is the mock's `{messageId, status}`, which proves nothing;
-the input is the message you wrote.
+`POST WhatsApp`'s OUTPUT is the mock's `{messageId, status: "sent"}`, which proves the call landed but
+says nothing about what you wrote. Pair it with this shot only if you have room.
 
 Caption: *004 failed on coverage, not price, so the customer is told about coverage. Three templates
 keyed on `failureCause`. The reporting enum has no coverage value, so the ticket says
@@ -333,8 +356,8 @@ Firing spends 019. That is fine, it is sandbox, and the brief says to use them h
 
 **10. The unhandled-error path.** `Unhandled error` → `Slack: alert` → `PATCH: Manual stage + note`.
 There should be an execution from Phase 3 showing this (the run with `HH-999`). If it is still in the
-list, photograph the canvas with `Slack: alert`'s **INPUT** open so the alert body and its `context`
-object are visible. Caption: *every node has its error output wired to one handler. Nothing fails
+list, photograph it with `Slack: alert` selected and its **INPUT** open, scrolled to `decision.slack`,
+which carries the severity, title, message and context that the request body is assembled from. Caption: *every node has its error output wired to one handler. Nothing fails
 silently; anything unexpected becomes a Manual ticket and a Slack alert with enough context to act on.*
 
 If that execution has aged out, skip it rather than manufacturing an error on a good ticket.
