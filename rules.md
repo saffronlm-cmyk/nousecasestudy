@@ -59,7 +59,7 @@ Two triggers, one core. Both feed a "normalise input" node that emits the same i
 | Webhook | HubSpot dispatches a new ticket | webhook body | `{ ticketId, householdId, userId, testMode, source: "webhook" }` |
 | Schedule | every `WAITING_POLL_MINUTES` | none | For each ticket in `WAITING_POLL_TICKET_IDS`: GET the ticket, keep it if `hs_pipeline_stage === WAITING_STAGE_ID`, emit `{ ticketId, householdId: automation_household_id, userId: automation_user_id, testMode: automation_test_mode, source: "schedule" }` from the stored properties |
 
-The ticket carries no household or user ID, so the first pass stores them (`STORED_INPUT_PROPERTIES`) in the same PATCH that sets `waiting`. The scheduled path reads them back. A Waiting ticket missing any stored property goes to Manual ("waiting ticket without stored input").
+The ticket carries no household or user ID, so the first pass stores them (`STORED_INPUT_PROPERTIES`) in the same PATCH that sets `waiting`. The scheduled path reads them back. A Waiting ticket missing any stored property goes to Manual: guard I0, below.
 
 The mock has no "list tickets by stage" endpoint, so the schedule path iterates a configured ID list. Production swaps that node for a HubSpot search on stage. Poll interval is the spacing between attempts: three attempts span roughly `2 × WAITING_POLL_MINUTES`. An n8n restart resets the clock; storing a last-attempt timestamp and skipping recently touched tickets is v2.
 
@@ -83,6 +83,7 @@ Only `null` and `waiting` are re-runnable. `completed` and `manual` exit. Any of
 
 | # | Shape | Check | Outcome | Writes | Slack |
 |---|---|---|---|---|---|
+| I0 | Missing input | `householdId` or `userId` missing from the trigger input (webhook body, or a Waiting ticket's stored properties) | Manual | note: "Routed to manual: [webhook/schedule] input is missing householdId or userId." | none |
 | I1a | Interrupted run | `automation_status` in `INTERRUPTED_STATUSES` | Manual | note: "Routed to manual: interrupted run, last status [status]. Check whether the [recommendation/message] went out before re-running." | warning: "interrupted run" |
 | I1b | Already handled | `automation_status` not null, not `waiting`, not in `INTERRUPTED_STATUSES` (i.e. `completed` or `manual`) | Exit | none | Info only if value is `completed` **and** stage is `OPEN_STAGE_ID` ("completed marker on open stage"). Otherwise silent. |
 | I2 | Terminal stage | `hs_pipeline_stage` not in `[OPEN_STAGE_ID, WAITING_STAGE_ID]` | Exit | none | none (added, see decisions.md) |

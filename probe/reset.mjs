@@ -3,7 +3,11 @@
 // Resets ticket properties only. The deals attempt counter (HH-006's 500 on attempt 1) is
 // server-side and cannot be reset here — see note at the bottom.
 //
-// Usage: node probe/reset.mjs [--dry-run]
+// Usage: node probe/reset.mjs --dry-run     preview only, no writes (also the default with no flag)
+//        node probe/reset.mjs --live        actually PATCH all 11 evaluated tickets
+//
+// Defaults to --dry-run. The evaluated tickets are one-shot and irreplaceable without asking
+// Nous for a reset, so a bare `node probe/reset.mjs` must never write by accident.
 
 import { readFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -20,7 +24,11 @@ const BASE = ENV.NOUS_BASE_URL;
 const TOKEN = ENV.NOUS_BEARER_TOKEN;
 if (!BASE || !TOKEN) throw new Error('NOUS_BASE_URL and NOUS_BEARER_TOKEN must be set in .env');
 
-const DRY_RUN = process.argv.includes('--dry-run');
+const LIVE = process.argv.includes('--live');
+const DRY_RUN = !LIVE;
+if (!LIVE && !process.argv.includes('--dry-run')) {
+  console.log('No flag given: defaulting to --dry-run (preview only). Pass --live to actually write.\n');
+}
 const EVALUATED = Array.from({ length: 11 }, (_, i) => `TICKET-${String(i + 1).padStart(3, '0')}`);
 
 const RESET_PROPERTIES = {

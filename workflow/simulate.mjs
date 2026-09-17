@@ -146,7 +146,9 @@ const EXPECTED = { // from rules.md
   1: ['446512118', 'completed'], 2: ['446512118', 'completed'], 3: ['409734350', 'completed'], 4: ['409734350', 'completed'], 5: ['440806104', 'manual'],
   6: ['446512118', 'completed'], 7: ['409734350', 'completed'], 8: ['409734350', 'completed'], 9: ['440806104', 'manual'], 10: ['390658766', 'completed'], 11: ['440806104', 'manual'],
   12: ['409734350', 'completed'], 13: ['446512118', 'completed'], 14: ['446512118', 'completed'], 15: ['446512118', 'completed'], 16: ['409734350', 'completed'], 17: ['409734350', 'completed'],
-  18: ['446512118', 'completed'], 19: ['446512118', 'completed'], 20: ['5060559097', 'waiting'], // dump predates the Phase 1 mutation; live, 020 exits at I1b. Not in the poll list, so stays Waiting here. 21: ['446512118', 'completed'], 22: ['446512118', 'completed'], 23: ['440806104', 'manual'], 24: ['446512118', 'completed'],
+  // 20: dump predates the Phase 1 mutation; live, 020 exits at I1b. Not in the poll list, so stays Waiting here.
+  18: ['446512118', 'completed'], 19: ['446512118', 'completed'], 20: ['5060559097', 'waiting'],
+  21: ['446512118', 'completed'], 22: ['446512118', 'completed'], 23: ['440806104', 'manual'], 24: ['446512118', 'completed'],
 };
 const STAGE = { '390658766': 'Open', '446512118': 'Success', '409734350': 'Failure', '440806104': 'Manual', '5060559097': 'Waiting' };
 let failures = 0;

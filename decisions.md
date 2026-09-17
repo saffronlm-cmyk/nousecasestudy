@@ -193,3 +193,12 @@ What this means:
 ### State of the mock after Phase 4
 
 All eleven evaluated tickets are now in terminal stages under their real IDs. Re-running any of them exits at I1b with no writes (verified on 010, and on 024 and 016 in Phase 3). A reset from Nous is needed for any further end-to-end run on the evaluated set; sandbox 012, 013, 015, 017, 018, 019, 021, 022 remain usable.
+
+## Debug pass — 17 September 2026
+
+A second-pass review against the "safe to inherit, easy to debug, safe to re-run" bar found and fixed four issues, none of which changed any outcome in the Phase 4 oracle. Full account in `debug-run.md`.
+
+24. **Guard I0 (missing `householdId`/`userId` on the trigger input) was implemented but never documented.** It has existed in `intake-guards.js` since Phase 3 and is what actually backs the "waiting ticket without stored input" behaviour described in the Triggers section, but it had no row in the `rules.md` guard table. Added. No config or logic changed; this was a documentation gap, not a bug.
+25. **`workflow/simulate.mjs`'s oracle table silently dropped tickets 21 to 24.** A trailing `//` comment on ticket 20's line ran to end of line and swallowed the next four object entries, so the simulator reported four false failures on every run despite the underlying logic being correct. Fixed by moving the comment to its own line. Re-run: 24/24 pass, genuinely.
+26. **`probe/reset.mjs` defaulted to LIVE writes with no flag.** A bare `node probe/reset.mjs` immediately PATCHed all 11 evaluated tickets, which are one-shot. Flipped the default to `--dry-run`; `--live` is now required to write.
+27. **`build-manual.js` had one unguarded path to a silent crash.** If `Unhandled error`'s fallback (`$('Config').item.json` failing to resolve) ever fires, the item it hands downstream has no `cfg`. `build-manual.js` read `j.cfg.stages.manual` with no check, and `Build manual` is deliberately not wired to the error handler, so that combination would have died with no ticket write and no Slack alert, the one path in the workflow that could have violated the "no silent exceptions" bar. Added a fallback to the known Manual stage ID and a note flagging when it was used.
