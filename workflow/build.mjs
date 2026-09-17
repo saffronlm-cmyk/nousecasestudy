@@ -87,7 +87,7 @@ add({ name: 'Webhook: HubSpot ticket', section: 1, errorFrom: 99, at: [0, 2], ty
 code('Normalise webhook input', 'normalise-webhook-input.js', { section: 1, at: [4, 2] });
 
 add({ name: 'Schedule: poll Waiting', section: 1, errorFrom: 99, at: [0, 0], type: 'n8n-nodes-base.scheduleTrigger', typeVersion: 1.2,
-  parameters: { rule: { interval: [{ field: 'minutes', minutesInterval: 60 }] } } });
+  parameters: { rule: { interval: [{ field: 'hours', hoursInterval: 1 }] } } });
 code('List poll candidates', 'list-poll-candidates.js', { section: 1, at: [1, 0], mode: 'all' });
 http('GET ticket (poll)', { section: 1, at: [2, 0], method: 'GET', url: '={{ $json.poll.baseUrl }}/hubspot/tickets/{{ $json.ticketId }}', errorFrom: 1 });
 ifNode('Is Waiting?', { section: 1, at: [3, 0], left: '={{ $json.properties.hs_pipeline_stage }}', right: "={{ $('List poll candidates').item.json.poll.waitingStageId }}" });

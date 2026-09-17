@@ -35,8 +35,9 @@ with both reasons on 003, 004, 007, 008; Manual on 005, 011; and 010 still Open 
 Two things to fix before you download, because the export captures live state.
 
 **Set the poll interval back to 60 minutes.** It is on 2 minutes from Phase 4 testing. Open
-`Schedule: poll Waiting` → *Trigger Interval* → Minutes → *Minutes Between Triggers* = `60`. The repo
-copy at `workflow/nous-mso-mobile-recommendation.json` already says 60; the live one does not.
+`Schedule: poll Waiting` → *Trigger Interval*. n8n's Minutes field caps at 59 (60 minutes is an hour,
+not a minutes value), so set it to Hours → *Hours Between Triggers* = `1`, not Minutes → 60. The repo
+copy at `workflow/nous-mso-mobile-recommendation.json` already says Hours/1; the live one may not.
 
 **Name the workflow** something the file name can carry, for example `Nous MSO mobile recommendation
 v1`. n8n names the download after the workflow, so this decides what lands in the reviewer's folder.
@@ -61,8 +62,8 @@ console.log("poll interval:", JSON.stringify(s.parameters.rule.interval));
 ```
 
 Adjust the path to wherever Chrome put it. You want 43 nodes both sides, no differences, and
-`minutesInterval: 60`. If nodes differ, the live workflow drifted from the repo and the export wins:
-copy it over `workflow/nous-mso-mobile-recommendation.json` and note what changed.
+`{"field":"hours","hoursInterval":1}`. If nodes differ, the live workflow drifted from the repo and
+the export wins: copy it over `workflow/nous-mso-mobile-recommendation.json` and note what changed.
 
 ## Deliverable 2: the screenshots
 
